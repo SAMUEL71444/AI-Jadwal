@@ -1,0 +1,56 @@
+[
+  {
+    "nama": "Quiz Lab Comp Bio",
+    "matkul": "Computational Biology",
+    "deadline": "30/05/2026",
+    "catatan": "",
+    "prioritas": "tinggi",
+    "selesai": false,
+    "dibuat": "24/05/2026 13:51"
+  },
+  {
+    "nama": "Group Project AoL",
+    "matkul": "Research Methodology",
+    "deadline": "11/06/2026",
+    "catatan": "",
+    "prioritas": "normal",
+    "selesai": false,
+    "dibuat": "24/05/2026 14:02"
+  },
+  {
+    "nama": "Group Project AoL",
+    "matkul": "Software Engineering",
+    "deadline": "11/06/2026",
+    "catatan": "",
+    "prioritas": "normal",
+    "selesai": false,
+    "dibuat": "24/05/2026 14:03"
+  },
+  {
+    "nama": "Final project",
+    "matkul": "Software Security",
+    "deadline": "09/06/2026",
+    "catatan": "",
+    "prioritas": "normal",
+    "selesai": false,
+    "dibuat": "24/05/2026 14:06"
+  },
+  {
+    "nama": "AoL Project",
+    "matkul": "Software Security",
+    "deadline": "09/06/2026",
+    "catatan": "",
+    "prioritas": "normal",
+    "selesai": false,
+    "dibuat": "24/05/2026 14:07"
+  },
+  {
+    "nama": "Final Project",
+    "matkul": "Server and Network Administration",
+    "deadline": "22/06/2026",
+    "catatan": "",
+    "prioritas": "normal",
+    "selesai": false,
+    "dibuat": "24/05/2026 14:08"
+  }
+]

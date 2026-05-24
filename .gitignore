@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+briefing.log
+evening_alert.log
+briefing_last.txt
+evening_last.txt

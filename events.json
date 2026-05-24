@@ -1,0 +1,22 @@
+[
+  {
+    "id": "evt_202605241352423798",
+    "nama": "Paper Diabetic Retinophaty",
+    "kategori": "jurnal",
+    "deadline": "25/05/2026",
+    "status": "aktif",
+    "peran": "Anggota",
+    "tim": [
+      "Sam",
+      "Stella",
+      "Lawra",
+      "Andreas"
+    ],
+    "deskripsi": "",
+    "milestones": [],
+    "catatan": "Harus buat Introduction",
+    "dibuat": "24/05/2026 13:52",
+    "selesai": false,
+    "hasil": ""
+  }
+]
