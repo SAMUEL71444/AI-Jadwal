@@ -1,15 +1,13 @@
+cat << 'HTMLEOF' > /home/claude/index_responsive.html
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Flowia OS</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" rel="stylesheet">
 <style>
-/* ═══════════════════════════════════════════════════════════════
-   FLOWIA OS — DESIGN SYSTEM
-═══════════════════════════════════════════════════════════════ */
 :root {
   --cyan:   #4dd9c0;
   --amber:  #f0a500;
@@ -28,23 +26,31 @@
   --radius: 10px;
   --font-mono: 'Space Mono', monospace;
   --font-body: 'DM Sans', sans-serif;
+  --header-h: 56px;
+  --nav-h: 56px;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
 body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 14px;
   line-height: 1.6;
-  min-height: 100vh;
-  display: flex;
   overflow: hidden;
 }
-::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 
-/* ─── SIDEBAR ─────────────────────────────────────────────── */
+/* ─── LAYOUT ──────────────────────────────────────────────── */
+.app-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ─── SIDEBAR (desktop) ───────────────────────────────────── */
 .sidebar {
   width: var(--sidebar-w);
   min-width: var(--sidebar-w);
@@ -56,9 +62,7 @@ body {
   padding: 20px 12px;
   gap: 4px;
   overflow-y: auto;
-  position: fixed;
-  top: 0; left: 0;
-  z-index: 100;
+  flex-shrink: 0;
 }
 .logo {
   font-family: var(--font-mono);
@@ -84,11 +88,11 @@ body {
   transition: all 0.15s;
   user-select: none;
   border: 1px solid transparent;
+  white-space: nowrap;
 }
 .nav-item:hover { background: var(--bg3); color: var(--text); }
 .nav-item.active { background: rgba(77,217,192,.12); color: var(--cyan); border-color: rgba(77,217,192,.2); }
-.nav-item i { font-size: 16px; width: 18px; text-align: center; }
-.nav-label { font-family: var(--font-body); }
+.nav-item i { font-size: 16px; width: 18px; text-align: center; flex-shrink: 0; }
 .nav-badge {
   margin-left: auto;
   background: var(--red);
@@ -103,63 +107,158 @@ body {
 }
 .sidebar-section { font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; padding: 12px 10px 4px; margin-top: 4px; }
 
-/* ─── MAIN ────────────────────────────────────────────────── */
+/* ─── MAIN CONTENT ────────────────────────────────────────── */
 .main {
-  margin-left: var(--sidebar-w);
   flex: 1;
   height: 100vh;
   overflow-y: auto;
   padding: 28px 32px;
+  min-width: 0;
 }
+
+/* ─── MOBILE HEADER ───────────────────────────────────────── */
+.mobile-header {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--header-h);
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 200;
+}
+.mobile-logo {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--cyan);
+  letter-spacing: 2px;
+}
+.hamburger {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text);
+  font-size: 18px;
+}
+
+/* ─── MOBILE DRAWER ───────────────────────────────────────── */
+.drawer-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 300;
+  backdrop-filter: blur(2px);
+}
+.drawer-overlay.open { display: block; }
+.drawer {
+  position: fixed;
+  top: 0; left: -100%;
+  width: 260px;
+  height: 100vh;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  z-index: 301;
+  padding: 20px 12px;
+  overflow-y: auto;
+  transition: left 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.drawer.open { left: 0; }
+.drawer-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border-radius: 6px;
+  background: var(--bg3); color: var(--muted);
+  font-size: 16px;
+}
+
+/* ─── BOTTOM NAV (mobile) ─────────────────────────────────── */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  z-index: 200;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 4px;
+}
+.bnav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 500;
+  transition: all 0.15s;
+  flex: 1;
+  min-width: 0;
+}
+.bnav-item i { font-size: 20px; }
+.bnav-item.active { color: var(--cyan); }
+.bnav-item span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; text-align: center; }
+
+/* ─── PAGE ────────────────────────────────────────────────── */
 .page { display: none; animation: fadeIn 0.2s ease; }
 .page.active { display: block; }
 @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
 
 /* ─── PAGE HEADER ─────────────────────────────────────────── */
-.page-header { margin-bottom: 24px; }
-.page-header h1 { font-family: var(--font-mono); font-size: 20px; color: var(--cyan); letter-spacing: 1px; margin-bottom: 2px; }
-.page-header p { color: var(--muted); font-size: 13px; }
+.page-header { margin-bottom: 20px; }
+.page-header h1 { font-family: var(--font-mono); font-size: 18px; color: var(--cyan); letter-spacing: 1px; margin-bottom: 2px; }
+.page-header p { color: var(--muted); font-size: 12px; }
 
 /* ─── CARDS ───────────────────────────────────────────────── */
-.card {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 18px;
-}
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
 .card-title {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
 /* ─── GRID ────────────────────────────────────────────────── */
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-.grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
 
 /* ─── STAT CARDS ──────────────────────────────────────────── */
 .stat-card {
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px 18px;
+  padding: 14px 16px;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 .stat-icon {
-  width: 40px; height: 40px;
+  width: 38px; height: 38px;
   border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
+  font-size: 17px;
   flex-shrink: 0;
 }
 .stat-icon.cyan  { background: rgba(77,217,192,.15); color: var(--cyan); }
@@ -168,8 +267,8 @@ body {
 .stat-icon.green { background: rgba(82,213,138,.15); color: var(--green); }
 .stat-icon.red   { background: rgba(240,92,92,.15);  color: var(--red); }
 .stat-icon.purple{ background: rgba(176,124,248,.15);color: var(--purple); }
-.stat-val { font-family: var(--font-mono); font-size: 26px; line-height: 1; color: var(--text); }
-.stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.stat-val { font-family: var(--font-mono); font-size: 24px; line-height: 1; color: var(--text); }
+.stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
 /* ─── BADGES ──────────────────────────────────────────────── */
 .badge {
@@ -194,7 +293,7 @@ body {
   transition: all 0.15s; white-space: nowrap;
 }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-primary  { background: var(--cyan);   color: #080b10; }
+.btn-primary  { background: var(--cyan); color: #080b10; }
 .btn-primary:hover { background: #3dc9b0; }
 .btn-ghost    { background: transparent; border-color: var(--border); color: var(--text); }
 .btn-ghost:hover { background: var(--bg3); }
@@ -205,7 +304,7 @@ body {
 
 /* ─── FORM ────────────────────────────────────────────────── */
 .form-group { margin-bottom: 14px; }
-.form-label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; letter-spacing: 0.3px; }
+.form-label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
 .form-input, .form-select, .form-textarea {
   width: 100%; background: var(--bg3);
   border: 1px solid var(--border);
@@ -213,19 +312,28 @@ body {
   font-family: var(--font-body); font-size: 14px;
   padding: 9px 12px; outline: none;
   transition: border-color 0.15s;
+  -webkit-appearance: none;
 }
 .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--cyan); }
 .form-select { cursor: pointer; }
 .form-textarea { resize: vertical; min-height: 80px; }
 
 /* ─── TABS ────────────────────────────────────────────────── */
-.tabs { display: flex; gap: 4px; margin-bottom: 18px; background: var(--bg2); padding: 4px; border-radius: 9px; border: 1px solid var(--border); flex-wrap: wrap; }
+.tabs {
+  display: flex; gap: 4px; margin-bottom: 16px;
+  background: var(--bg2); padding: 4px; border-radius: 9px;
+  border: 1px solid var(--border);
+  overflow-x: auto; flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
 .tab-btn {
   padding: 6px 12px; border-radius: 6px;
   cursor: pointer; font-size: 12px; font-weight: 500;
   color: var(--muted); border: none; background: transparent;
   transition: all 0.15s; font-family: var(--font-body);
-  white-space: nowrap;
+  white-space: nowrap; flex-shrink: 0;
 }
 .tab-btn:hover { color: var(--text); }
 .tab-btn.active { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
@@ -236,23 +344,26 @@ body {
   inset: 0; z-index: 999;
   background: rgba(0,0,0,0.7);
   backdrop-filter: blur(4px);
-  align-items: center; justify-content: center;
+  align-items: flex-end;
+  justify-content: center;
 }
 .modal-overlay.open { display: flex; }
 .modal {
   background: var(--bg2);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 24px;
-  width: 90%; max-width: 520px;
-  max-height: 90vh; overflow-y: auto;
-  animation: fadeIn 0.2s ease;
+  border-radius: 16px 16px 0 0;
+  padding: 20px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.25s ease;
 }
-.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-.modal-title { font-family: var(--font-mono); font-size: 14px; color: var(--cyan); letter-spacing: 1px; }
-.modal-close { cursor: pointer; color: var(--muted); font-size: 18px; line-height: 1; padding: 2px 6px; border-radius: 4px; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.modal-title { font-family: var(--font-mono); font-size: 13px; color: var(--cyan); letter-spacing: 1px; }
+.modal-close { cursor: pointer; color: var(--muted); font-size: 18px; padding: 4px 8px; border-radius: 4px; }
 .modal-close:hover { color: var(--text); background: var(--bg3); }
-.modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+.modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
 
 /* ─── PROGRESS BAR ────────────────────────────────────────── */
 .progress-wrap { background: var(--bg3); border-radius: 99px; height: 6px; overflow: hidden; }
@@ -260,11 +371,10 @@ body {
 .progress-bar.amber { background: var(--amber); }
 .progress-bar.red   { background: var(--red); }
 .progress-bar.green { background: var(--green); }
-.progress-bar.purple{ background: var(--purple); }
 
 /* ─── LIST ITEMS ──────────────────────────────────────────── */
 .item-row {
-  display: flex; align-items: center; gap: 12px;
+  display: flex; align-items: center; gap: 10px;
   padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid var(--border);
@@ -273,21 +383,21 @@ body {
   animation: slideIn 0.15s ease;
 }
 @keyframes slideIn { from { opacity:0; transform:translateX(-6px); } to { opacity:1; transform:none; } }
-.item-row:hover { border-color: rgba(255,255,255,.12); }
 .item-main { flex: 1; min-width: 0; }
 .item-title { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .item-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
 .item-actions { display: flex; gap: 5px; flex-shrink: 0; }
 
 /* ─── TOAST ───────────────────────────────────────────────── */
-.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.toast-container { position: fixed; bottom: 70px; right: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
 .toast {
   background: var(--bg3); border: 1px solid var(--border);
-  color: var(--text); padding: 10px 16px;
-  border-radius: 8px; font-size: 13px;
+  color: var(--text); padding: 10px 14px;
+  border-radius: 8px; font-size: 12px;
   display: flex; align-items: center; gap: 8px;
   animation: toastIn 0.2s ease;
-  max-width: 320px;
+  max-width: 280px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
 @keyframes toastIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
 .toast.success { border-color: rgba(82,213,138,.3); }
@@ -298,66 +408,59 @@ body {
 
 /* ─── EVENT CARD ──────────────────────────────────────────── */
 .event-card {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px 16px;
-  margin-bottom: 10px;
-  animation: slideIn 0.15s ease;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px;
+  margin-bottom: 10px; animation: slideIn 0.15s ease;
 }
-.event-card:hover { border-color: rgba(255,255,255,.12); }
-.event-card-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.event-card-header { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
 .event-card-main { flex: 1; min-width: 0; }
-.event-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
-.event-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.event-card-actions { display: flex; gap: 5px; }
+.event-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.event-meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.event-card-actions { display: flex; gap: 4px; flex-shrink: 0; }
 .milestone-list { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
-.milestone-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; }
-.milestone-item input[type=checkbox] { accent-color: var(--cyan); cursor: pointer; }
+.milestone-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; cursor: pointer; }
+.milestone-item input[type=checkbox] { accent-color: var(--cyan); cursor: pointer; width: 16px; height: 16px; flex-shrink: 0; }
 .milestone-item label { font-size: 12px; color: var(--muted); cursor: pointer; }
-.milestone-item.done label { text-decoration: line-through; color: var(--muted); opacity: 0.5; }
+.milestone-item.done label { text-decoration: line-through; opacity: 0.5; }
 
 /* ─── GOAL CARD ───────────────────────────────────────────── */
 .goal-card {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px;
-  margin-bottom: 10px;
-  animation: slideIn 0.15s ease;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px;
+  margin-bottom: 10px; animation: slideIn 0.15s ease;
 }
-.goal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; gap: 10px; }
+.goal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; gap: 8px; }
 .goal-progress-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 .goal-pct { font-family: var(--font-mono); font-size: 13px; color: var(--cyan); min-width: 36px; text-align: right; }
-.goal-slider { width: 100%; accent-color: var(--cyan); cursor: pointer; }
 
 /* ─── CHAT ────────────────────────────────────────────────── */
-.chat-wrap { display: flex; flex-direction: column; height: calc(100vh - 140px); }
-.mode-bar { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.chat-wrap { display: flex; flex-direction: column; height: calc(100vh - 180px); }
+.mode-bar { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; }
+.mode-bar::-webkit-scrollbar { display: none; }
 .mode-btn {
   padding: 6px 12px; border-radius: 99px;
   font-size: 12px; font-weight: 500; cursor: pointer;
   border: 1px solid var(--border);
   background: transparent; color: var(--muted);
   font-family: var(--font-body);
-  transition: all 0.15s;
+  transition: all 0.15s; white-space: nowrap; flex-shrink: 0;
 }
-.mode-btn:hover { color: var(--text); border-color: rgba(255,255,255,.2); }
 .mode-btn.active { background: rgba(77,217,192,.12); color: var(--cyan); border-color: rgba(77,217,192,.4); }
-.chat-box { flex: 1; overflow-y: auto; padding: 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
-.msg { max-width: 80%; display: flex; flex-direction: column; gap: 4px; animation: slideIn 0.15s ease; }
+.chat-box {
+  flex: 1; overflow-y: auto; padding: 12px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; display: flex; flex-direction: column;
+  gap: 12px; margin-bottom: 10px;
+}
+.msg { max-width: 85%; display: flex; flex-direction: column; gap: 4px; animation: slideIn 0.15s ease; }
 .msg.user { align-self: flex-end; align-items: flex-end; }
 .msg.ai   { align-self: flex-start; }
-.msg-bubble {
-  padding: 10px 14px; border-radius: 12px;
-  font-size: 13px; line-height: 1.6;
-}
+.msg-bubble { padding: 10px 13px; border-radius: 12px; font-size: 13px; line-height: 1.6; }
 .msg.user .msg-bubble { background: rgba(77,217,192,.15); color: var(--text); border-bottom-right-radius: 3px; }
 .msg.ai .msg-bubble   { background: var(--bg2); border: 1px solid var(--border); border-bottom-left-radius: 3px; }
-.msg-meta { font-size: 10px; color: var(--muted); padding: 0 4px; }
 .chat-input-row { display: flex; gap: 8px; }
 .chat-input { flex: 1; }
-.chat-sys-info { font-size: 11px; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.chat-sys-info { font-size: 11px; color: var(--muted); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
 .typing-dot { display: inline-flex; gap: 3px; }
 .typing-dot span { width: 5px; height: 5px; background: var(--cyan); border-radius: 50%; animation: blink 1.2s infinite; }
 .typing-dot span:nth-child(2) { animation-delay: 0.2s; }
@@ -366,13 +469,9 @@ body {
 
 /* ─── IDEA VAULT ──────────────────────────────────────────── */
 .idea-card {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px 16px;
-  cursor: pointer;
-  transition: border-color 0.15s;
-  animation: slideIn 0.15s ease;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px; cursor: pointer;
+  transition: border-color 0.15s; animation: slideIn 0.15s ease;
 }
 .idea-card:hover { border-color: rgba(77,217,192,.3); }
 .idea-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
@@ -381,249 +480,271 @@ body {
 .idea-tag { font-size: 10px; background: var(--bg2); border: 1px solid var(--border); color: var(--muted); padding: 1px 7px; border-radius: 99px; }
 
 /* ─── QUICK NOTES ─────────────────────────────────────────── */
-.note-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; animation: slideIn 0.15s ease; }
-.note-item:hover { border-color: rgba(255,255,255,.12); }
-.note-konten { flex: 1; font-size: 13px; color: var(--text); line-height: 1.5; }
+.note-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; }
+.note-konten { flex: 1; font-size: 13px; color: var(--text); line-height: 1.5; word-break: break-word; }
 .note-time { font-size: 10px; color: var(--muted); margin-top: 3px; }
 
 /* ─── JADWAL TABLE ────────────────────────────────────────── */
 .jadwal-table { width: 100%; border-collapse: collapse; }
-.jadwal-table th, .jadwal-table td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
-.jadwal-table th { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); background: var(--bg3); }
+.jadwal-table th, .jadwal-table td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); font-size: 12px; }
+.jadwal-table th { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); background: var(--bg3); }
 .jadwal-table tr:hover td { background: var(--bg3); }
 .jadwal-empty { text-align: center; color: var(--muted); padding: 20px; font-size: 13px; }
 
 /* ─── BAR CHART ───────────────────────────────────────────── */
 .bar-chart { display: flex; flex-direction: column; gap: 8px; }
-.bar-row { display: flex; align-items: center; gap: 10px; }
-.bar-label { width: 120px; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-row { display: flex; align-items: center; gap: 8px; }
+.bar-label { width: 100px; font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
 .bar-track { flex: 1; height: 8px; background: var(--bg3); border-radius: 99px; overflow: hidden; }
 .bar-fill { height: 100%; background: var(--cyan); border-radius: 99px; transition: width 0.5s ease; min-width: 4px; }
-.bar-num { font-size: 11px; color: var(--muted); width: 20px; text-align: right; }
+.bar-num { font-size: 11px; color: var(--muted); width: 18px; text-align: right; flex-shrink: 0; }
 
-/* ─── DASHBOARD GREETING ──────────────────────────────────── */
-.greeting-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-.greeting-text h2 { font-family: var(--font-mono); font-size: 18px; color: var(--text); }
-.greeting-text p  { font-size: 13px; color: var(--muted); margin-top: 2px; }
+/* ─── DASHBOARD ───────────────────────────────────────────── */
+.greeting-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+.greeting-text h2 { font-family: var(--font-mono); font-size: 16px; color: var(--text); }
+.greeting-text p  { font-size: 12px; color: var(--muted); margin-top: 2px; }
 .greeting-actions { display: flex; gap: 8px; }
 
-/* ─── SCHEDULE CHIP ───────────────────────────────────────── */
 .sched-chip {
   display: flex; align-items: center; gap: 10px;
-  padding: 9px 12px; background: var(--bg3);
-  border: 1px solid var(--border); border-radius: 8px;
-  margin-bottom: 6px;
+  padding: 8px 10px; background: var(--bg3);
+  border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px;
 }
-.sched-chip .time { font-family: var(--font-mono); font-size: 11px; color: var(--cyan); min-width: 90px; }
-.sched-chip .matkul { font-size: 13px; color: var(--text); font-weight: 500; }
-.sched-chip .ruang { font-size: 11px; color: var(--muted); }
+.sched-chip .time { font-family: var(--font-mono); font-size: 10px; color: var(--cyan); min-width: 80px; flex-shrink: 0; }
+.sched-chip .matkul { font-size: 12px; color: var(--text); font-weight: 500; }
+.sched-chip .ruang { font-size: 10px; color: var(--muted); }
 
 /* ─── MISC ────────────────────────────────────────────────── */
-.divider { height: 1px; background: var(--border); margin: 16px 0; }
-.empty-state { text-align: center; padding: 30px 20px; color: var(--muted); }
-.empty-state i { font-size: 32px; display: block; margin-bottom: 8px; }
-.empty-state p { font-size: 13px; }
-.section-title { font-family: var(--font-mono); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+.divider { height: 1px; background: var(--border); margin: 14px 0; }
+.empty-state { text-align: center; padding: 24px 16px; color: var(--muted); }
+.empty-state i { font-size: 28px; display: block; margin-bottom: 8px; }
+.empty-state p { font-size: 12px; }
+.section-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
 .mb-16 { margin-bottom: 16px; }
-.mb-24 { margin-bottom: 24px; }
-.flex-row { display: flex; align-items: center; gap: 10px; }
+.mb-12 { margin-bottom: 12px; }
+.flex-row { display: flex; align-items: center; gap: 8px; }
 .flex-between { display: flex; align-items: center; justify-content: space-between; }
-code { font-family: var(--font-mono); font-size: 12px; background: var(--bg3); padding: 1px 6px; border-radius: 4px; color: var(--cyan); }
-pre { font-family: var(--font-mono); font-size: 12px; background: var(--bg3); border: 1px solid var(--border); padding: 12px; border-radius: 8px; overflow-x: auto; white-space: pre-wrap; color: var(--text); margin: 6px 0; }
+code { font-family: var(--font-mono); font-size: 11px; background: var(--bg3); padding: 1px 5px; border-radius: 4px; color: var(--cyan); }
+pre { font-family: var(--font-mono); font-size: 11px; background: var(--bg3); border: 1px solid var(--border); padding: 10px; border-radius: 8px; overflow-x: auto; white-space: pre-wrap; color: var(--text); margin: 6px 0; }
 
-/* ─── MARKDOWN RENDER ─────────────────────────────────────── */
+/* ─── MARKDOWN ────────────────────────────────────────────── */
 .md-content h1, .md-content h2, .md-content h3 { color: var(--cyan); font-family: var(--font-mono); margin: 8px 0 4px; }
 .md-content ul, .md-content ol { padding-left: 18px; }
 .md-content li { margin-bottom: 2px; }
 .md-content strong { color: var(--amber); }
 .md-content em { color: var(--muted); font-style: italic; }
-.md-content a { color: var(--blue); }
 
-/* ─── LAUNCHER GRID ───────────────────────────────────────── */
+/* ─── LAUNCHER ────────────────────────────────────────────── */
 .app-card {
   background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 12px; padding: 24px 16px;
-  text-align: center; cursor: pointer;
-  transition: all 0.15s;
+  border-radius: 12px; padding: 20px 14px;
+  text-align: center; cursor: pointer; transition: all 0.15s;
 }
 .app-card:hover { border-color: var(--cyan); transform: translateY(-2px); }
-.app-card i { font-size: 32px; color: var(--cyan); display: block; margin-bottom: 10px; }
+.app-card i { font-size: 28px; color: var(--cyan); display: block; margin-bottom: 8px; }
 .app-card span { font-size: 13px; color: var(--text); font-weight: 500; }
 
-/* ─── FLASHCARD RESULT ────────────────────────────────────── */
-.fc-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 10px; }
+/* ─── FLASHCARD ───────────────────────────────────────────── */
+.fc-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
 .fc-q { font-weight: 600; color: var(--cyan); margin-bottom: 6px; font-size: 13px; }
 .fc-a { font-size: 13px; color: var(--text); }
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE — MOBILE
+══════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .mobile-header { display: flex; }
+  .bottom-nav { display: flex; }
+
+  .main {
+    padding: 12px 14px;
+    padding-top: calc(var(--header-h) + 12px);
+    padding-bottom: calc(var(--nav-h) + 12px);
+    height: 100vh;
+  }
+
+  .toast-container { bottom: calc(var(--nav-h) + 12px); right: 12px; }
+
+  .grid-5 { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .grid-4 { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .grid-3 { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .grid-2 { grid-template-columns: 1fr; gap: 12px; }
+
+  .stat-card { padding: 12px; }
+  .stat-val { font-size: 20px; }
+  .stat-icon { width: 34px; height: 34px; font-size: 15px; }
+
+  .page-header h1 { font-size: 16px; }
+  .greeting-text h2 { font-size: 14px; }
+
+  .chat-wrap { height: calc(100vh - var(--header-h) - var(--nav-h) - 140px); }
+
+  .modal-overlay { align-items: flex-end; }
+  .modal { border-radius: 16px 16px 0 0; max-height: 85vh; }
+
+  .event-card-actions { flex-direction: row; }
+  .btn-sm { padding: 5px 8px; font-size: 11px; }
+
+  .bar-label { width: 80px; font-size: 10px; }
+
+  .ideas-grid-wrap { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 380px) {
+  .grid-5 { grid-template-columns: repeat(2, 1fr); }
+  .main { padding: 10px 10px; padding-top: calc(var(--header-h) + 10px); padding-bottom: calc(var(--nav-h) + 10px); }
+}
 </style>
 </head>
 <body>
 
-<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<!-- ═══════════ MOBILE HEADER ═══════════ -->
+<div class="mobile-header">
+  <div class="mobile-logo">FLOWIA</div>
+  <div class="hamburger" onclick="openDrawer()"><i class="ti ti-menu-2"></i></div>
+</div>
+
+<!-- ═══════════ DRAWER OVERLAY ═══════════ -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-close" onclick="closeDrawer()"><i class="ti ti-x"></i></div>
+  <div class="logo" style="margin-top:8px">FLOWIA<span>OS v2.0 — Koman</span></div>
+  <span class="sidebar-section">Utama</span>
+  <div class="nav-item" onclick="showPage('dashboard');closeDrawer()"><i class="ti ti-layout-dashboard"></i><span>Dashboard</span></div>
+  <div class="nav-item" onclick="showPage('tugas');closeDrawer()"><i class="ti ti-checkbox"></i><span>Tugas</span></div>
+  <div class="nav-item" onclick="showPage('events');closeDrawer()"><i class="ti ti-trophy"></i><span>Events</span></div>
+  <div class="nav-item" onclick="showPage('goals');closeDrawer()"><i class="ti ti-target"></i><span>Goals</span></div>
+  <div class="nav-item" onclick="showPage('jadwal');closeDrawer()"><i class="ti ti-calendar"></i><span>Jadwal</span></div>
+  <span class="sidebar-section">Kerja</span>
+  <div class="nav-item" onclick="showPage('chat');closeDrawer()"><i class="ti ti-message-circle-2"></i><span>Chat AI</span></div>
+  <div class="nav-item" onclick="showPage('ideas');closeDrawer()"><i class="ti ti-bulb"></i><span>Idea Vault</span></div>
+  <div class="nav-item" onclick="showPage('flashcard');closeDrawer()"><i class="ti ti-cards"></i><span>Flashcard</span></div>
+  <div class="nav-item" onclick="showPage('notes');closeDrawer()"><i class="ti ti-notes"></i><span>Quick Notes</span></div>
+  <span class="sidebar-section">Tools</span>
+  <div class="nav-item" onclick="showPage('launcher');closeDrawer()"><i class="ti ti-rocket"></i><span>Launcher</span></div>
+</div>
+
+<!-- ═══════════ APP LAYOUT ═══════════ -->
+<div class="app-layout">
+
+<!-- SIDEBAR (desktop) -->
 <nav class="sidebar">
   <div class="logo">FLOWIA<span>OS v2.0 — Koman</span></div>
-
   <span class="sidebar-section">Utama</span>
-  <div class="nav-item active" onclick="showPage('dashboard')">
-    <i class="ti ti-layout-dashboard"></i><span class="nav-label">Dashboard</span>
-  </div>
-  <div class="nav-item" onclick="showPage('tugas')">
-    <i class="ti ti-checkbox"></i><span class="nav-label">Tugas</span>
-    <span class="nav-badge" id="badge-tugas" style="display:none"></span>
-  </div>
-  <div class="nav-item" onclick="showPage('events')">
-    <i class="ti ti-trophy"></i><span class="nav-label">Events</span>
-    <span class="nav-badge" id="badge-events" style="display:none"></span>
-  </div>
-  <div class="nav-item" onclick="showPage('goals')">
-    <i class="ti ti-target"></i><span class="nav-label">Goals</span>
-  </div>
-  <div class="nav-item" onclick="showPage('jadwal')">
-    <i class="ti ti-calendar"></i><span class="nav-label">Jadwal</span>
-  </div>
-
+  <div class="nav-item active" onclick="showPage('dashboard')"><i class="ti ti-layout-dashboard"></i><span class="nav-label">Dashboard</span></div>
+  <div class="nav-item" onclick="showPage('tugas')"><i class="ti ti-checkbox"></i><span class="nav-label">Tugas</span><span class="nav-badge" id="badge-tugas" style="display:none"></span></div>
+  <div class="nav-item" onclick="showPage('events')"><i class="ti ti-trophy"></i><span class="nav-label">Events</span></div>
+  <div class="nav-item" onclick="showPage('goals')"><i class="ti ti-target"></i><span class="nav-label">Goals</span></div>
+  <div class="nav-item" onclick="showPage('jadwal')"><i class="ti ti-calendar"></i><span class="nav-label">Jadwal</span></div>
   <span class="sidebar-section">Kerja</span>
-  <div class="nav-item" onclick="showPage('chat')">
-    <i class="ti ti-message-circle-2"></i><span class="nav-label">Chat AI</span>
-  </div>
-  <div class="nav-item" onclick="showPage('ideas')">
-    <i class="ti ti-bulb"></i><span class="nav-label">Idea Vault</span>
-  </div>
-  <div class="nav-item" onclick="showPage('flashcard')">
-    <i class="ti ti-cards"></i><span class="nav-label">Flashcard</span>
-  </div>
-  <div class="nav-item" onclick="showPage('notes')">
-    <i class="ti ti-notes"></i><span class="nav-label">Quick Notes</span>
-  </div>
-
+  <div class="nav-item" onclick="showPage('chat')"><i class="ti ti-message-circle-2"></i><span class="nav-label">Chat AI</span></div>
+  <div class="nav-item" onclick="showPage('ideas')"><i class="ti ti-bulb"></i><span class="nav-label">Idea Vault</span></div>
+  <div class="nav-item" onclick="showPage('flashcard')"><i class="ti ti-cards"></i><span class="nav-label">Flashcard</span></div>
+  <div class="nav-item" onclick="showPage('notes')"><i class="ti ti-notes"></i><span class="nav-label">Quick Notes</span></div>
   <span class="sidebar-section">Tools</span>
-  <div class="nav-item" onclick="showPage('launcher')">
-    <i class="ti ti-rocket"></i><span class="nav-label">Launcher</span>
-  </div>
+  <div class="nav-item" onclick="showPage('launcher')"><i class="ti ti-rocket"></i><span class="nav-label">Launcher</span></div>
 </nav>
 
-<!-- ═══════════════ MAIN ═══════════════ -->
+<!-- MAIN -->
 <main class="main">
 
-<!-- ────────── DASHBOARD ────────── -->
+<!-- ── DASHBOARD ── -->
 <section class="page active" id="page-dashboard">
   <div class="greeting-row">
     <div class="greeting-text">
-      <h2 id="dash-greeting">Selamat datang, Koman 👋</h2>
+      <h2 id="dash-greeting">Selamat datang 👋</h2>
       <p id="dash-date"></p>
     </div>
     <div class="greeting-actions">
       <button class="btn btn-ghost btn-sm" onclick="kirimBriefing()"><i class="ti ti-send"></i> Briefing</button>
-      <button class="btn btn-primary btn-sm" onclick="showPage('chat'); setMode('planner')"><i class="ti ti-brain"></i> AI Planner</button>
+      <button class="btn btn-primary btn-sm" onclick="showPage('chat');setMode('planner')"><i class="ti ti-brain"></i> Planner</button>
     </div>
   </div>
-
-  <div class="grid-5 mb-24" id="dash-stats">
-    <div class="stat-card"><div class="stat-icon cyan"><i class="ti ti-checkbox"></i></div><div><div class="stat-val" id="st-tugas">–</div><div class="stat-label">Tugas Aktif</div></div></div>
+  <div class="grid-5 mb-12" id="dash-stats">
+    <div class="stat-card"><div class="stat-icon cyan"><i class="ti ti-checkbox"></i></div><div><div class="stat-val" id="st-tugas">–</div><div class="stat-label">Tugas</div></div></div>
     <div class="stat-card"><div class="stat-icon amber"><i class="ti ti-trophy"></i></div><div><div class="stat-val" id="st-events">–</div><div class="stat-label">Events</div></div></div>
-    <div class="stat-card"><div class="stat-icon purple"><i class="ti ti-target"></i></div><div><div class="stat-val" id="st-goals">–</div><div class="stat-label">Goals Aktif</div></div></div>
-    <div class="stat-card"><div class="stat-icon blue"><i class="ti ti-calendar"></i></div><div><div class="stat-val" id="st-kuliah">–</div><div class="stat-label">Kuliah Hari Ini</div></div></div>
+    <div class="stat-card"><div class="stat-icon purple"><i class="ti ti-target"></i></div><div><div class="stat-val" id="st-goals">–</div><div class="stat-label">Goals</div></div></div>
+    <div class="stat-card"><div class="stat-icon blue"><i class="ti ti-calendar"></i></div><div><div class="stat-val" id="st-kuliah">–</div><div class="stat-label">Kuliah</div></div></div>
     <div class="stat-card"><div class="stat-icon red"><i class="ti ti-alert-triangle"></i></div><div><div class="stat-val" id="st-mendesak">–</div><div class="stat-label">Mendesak</div></div></div>
   </div>
-
-  <div class="grid-2 mb-16">
-    <div class="card">
-      <div class="card-title"><i class="ti ti-calendar-event"></i> Jadwal Hari Ini</div>
-      <div id="dash-jadwal"></div>
-    </div>
-    <div class="card">
-      <div class="card-title"><i class="ti ti-trophy"></i> Events Mendatang (30 hari)</div>
-      <div id="dash-events"></div>
-    </div>
+  <div class="grid-2 mb-12">
+    <div class="card"><div class="card-title"><i class="ti ti-calendar-event"></i> Jadwal Hari Ini</div><div id="dash-jadwal"></div></div>
+    <div class="card"><div class="card-title"><i class="ti ti-trophy"></i> Events Mendatang</div><div id="dash-events"></div></div>
   </div>
-
-  <div class="grid-2 mb-16">
-    <div class="card">
-      <div class="card-title"><i class="ti ti-alert-triangle"></i> Tugas Mendesak (≤7 hari)</div>
-      <div id="dash-tugas-mendesak"></div>
-    </div>
-    <div class="card">
-      <div class="card-title"><i class="ti ti-target"></i> Goals Progress (Top 3)</div>
-      <div id="dash-goals"></div>
-    </div>
+  <div class="grid-2 mb-12">
+    <div class="card"><div class="card-title"><i class="ti ti-alert-triangle"></i> Tugas Mendesak</div><div id="dash-tugas-mendesak"></div></div>
+    <div class="card"><div class="card-title"><i class="ti ti-target"></i> Goals Top 3</div><div id="dash-goals"></div></div>
   </div>
-
   <div class="grid-2">
+    <div class="card"><div class="card-title"><i class="ti ti-chart-bar"></i> Beban per Matkul</div><div class="bar-chart" id="dash-matkul"></div></div>
     <div class="card">
-      <div class="card-title"><i class="ti ti-chart-bar"></i> Beban per Matkul</div>
-      <div class="bar-chart" id="dash-matkul"></div>
-    </div>
-    <div class="card">
-      <div class="card-title"><i class="ti ti-notes"></i> Quick Notes Terbaru</div>
+      <div class="card-title"><i class="ti ti-notes"></i> Quick Notes</div>
       <div id="dash-notes"></div>
-      <div class="mt-8" style="margin-top:10px">
-        <div class="flex-row">
-          <input class="form-input" id="dash-note-input" placeholder="Tambah note cepat..." style="flex:1" onkeydown="if(event.key==='Enter')quickNoteFromDash()">
-          <button class="btn btn-ghost btn-sm" onclick="quickNoteFromDash()"><i class="ti ti-plus"></i></button>
-        </div>
-      </div>
+      <div style="margin-top:10px"><div class="flex-row"><input class="form-input" id="dash-note-input" placeholder="Note cepat..." style="flex:1" onkeydown="if(event.key==='Enter')quickNoteFromDash()"><button class="btn btn-ghost btn-sm" onclick="quickNoteFromDash()"><i class="ti ti-plus"></i></button></div></div>
     </div>
   </div>
 </section>
 
-<!-- ────────── TUGAS ────────── -->
+<!-- ── TUGAS ── -->
 <section class="page" id="page-tugas">
   <div class="page-header">
     <div class="flex-between">
-      <div><h1>✅ Tugas Kuliah</h1><p>Kelola semua tugas dan deadline kuliah</p></div>
-      <button class="btn btn-primary" onclick="openModal('modal-tugas')"><i class="ti ti-plus"></i> Tambah Tugas</button>
+      <div><h1>✅ Tugas</h1><p>Kelola deadline kuliah</p></div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modal-tugas')"><i class="ti ti-plus"></i> Tambah</button>
     </div>
   </div>
   <div class="tabs" id="tabs-tugas">
-    <button class="tab-btn active" onclick="filterTugas('semua', this)">Semua</button>
-    <button class="tab-btn" onclick="filterTugas('mendesak', this)">🚨 Mendesak (≤3 hari)</button>
-    <button class="tab-btn" onclick="filterTugas('7hari', this)">📅 7 Hari</button>
-    <button class="tab-btn" onclick="filterTugas('tinggi', this)">🔴 Prioritas Tinggi</button>
+    <button class="tab-btn active" onclick="filterTugas('semua',this)">Semua</button>
+    <button class="tab-btn" onclick="filterTugas('mendesak',this)">🚨 ≤3 hari</button>
+    <button class="tab-btn" onclick="filterTugas('7hari',this)">📅 7 hari</button>
+    <button class="tab-btn" onclick="filterTugas('tinggi',this)">🔴 Tinggi</button>
   </div>
   <div id="tugas-list"></div>
 </section>
 
-<!-- ────────── EVENTS ────────── -->
+<!-- ── EVENTS ── -->
 <section class="page" id="page-events">
   <div class="page-header">
     <div class="flex-between">
-      <div><h1>🏆 Events & Kompetisi</h1><p>Lomba, CTF, jurnal, bisnis, dan semua aktivitas penting</p></div>
-      <button class="btn btn-primary" onclick="openModal('modal-event')"><i class="ti ti-plus"></i> Tambah Event</button>
+      <div><h1>🏆 Events</h1><p>Lomba, CTF, jurnal, bisnis</p></div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modal-event')"><i class="ti ti-plus"></i> Tambah</button>
     </div>
   </div>
   <div class="tabs" id="tabs-events">
-    <button class="tab-btn active" onclick="filterEvents('semua', this)">Semua</button>
-    <button class="tab-btn" onclick="filterEvents('lomba_ai', this)">🤖 Lomba AI</button>
-    <button class="tab-btn" onclick="filterEvents('hackathon', this)">💻 Hackathon</button>
-    <button class="tab-btn" onclick="filterEvents('ctf', this)">🔐 CTF</button>
-    <button class="tab-btn" onclick="filterEvents('jurnal', this)">📄 Jurnal</button>
-    <button class="tab-btn" onclick="filterEvents('bisnis', this)">💼 Bisnis</button>
-    <button class="tab-btn" onclick="filterEvents('organisasi', this)">🏛️ Organisasi</button>
+    <button class="tab-btn active" onclick="filterEvents('semua',this)">Semua</button>
+    <button class="tab-btn" onclick="filterEvents('lomba_ai',this)">🤖 AI</button>
+    <button class="tab-btn" onclick="filterEvents('hackathon',this)">💻 Hack</button>
+    <button class="tab-btn" onclick="filterEvents('ctf',this)">🔐 CTF</button>
+    <button class="tab-btn" onclick="filterEvents('jurnal',this)">📄 Jurnal</button>
+    <button class="tab-btn" onclick="filterEvents('bisnis',this)">💼 Bisnis</button>
+    <button class="tab-btn" onclick="filterEvents('organisasi',this)">🏛️ Org</button>
   </div>
   <div id="events-list"></div>
 </section>
 
-<!-- ────────── GOALS ────────── -->
+<!-- ── GOALS ── -->
 <section class="page" id="page-goals">
   <div class="page-header">
     <div class="flex-between">
-      <div><h1>🎯 Goals & OKR</h1><p>Tujuan besar yang harus dicapai</p></div>
-      <button class="btn btn-primary" onclick="openModal('modal-goal')"><i class="ti ti-plus"></i> Tambah Goal</button>
+      <div><h1>🎯 Goals</h1><p>Target besar yang harus dicapai</p></div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modal-goal')"><i class="ti ti-plus"></i> Tambah</button>
     </div>
   </div>
   <div id="goals-list"></div>
 </section>
 
-<!-- ────────── JADWAL ────────── -->
+<!-- ── JADWAL ── -->
 <section class="page" id="page-jadwal">
-  <div class="page-header"><h1>📅 Jadwal Kuliah</h1><p>Jadwal lengkap semua hari</p></div>
+  <div class="page-header"><h1>📅 Jadwal</h1><p>Jadwal kuliah mingguan</p></div>
   <div class="tabs">
-    <button class="tab-btn" onclick="showJadwal('Senin', this)">Senin</button>
-    <button class="tab-btn" onclick="showJadwal('Selasa', this)">Selasa</button>
-    <button class="tab-btn" onclick="showJadwal('Rabu', this)">Rabu</button>
-    <button class="tab-btn" onclick="showJadwal('Kamis', this)">Kamis</button>
-    <button class="tab-btn" onclick="showJadwal('Jumat', this)">Jumat</button>
-    <button class="tab-btn" onclick="showJadwal('Sabtu', this)">Sabtu</button>
-    <button class="tab-btn" onclick="showJadwal('Minggu', this)">Minggu</button>
+    <button class="tab-btn" onclick="showJadwal('Senin',this)">Sen</button>
+    <button class="tab-btn" onclick="showJadwal('Selasa',this)">Sel</button>
+    <button class="tab-btn" onclick="showJadwal('Rabu',this)">Rab</button>
+    <button class="tab-btn" onclick="showJadwal('Kamis',this)">Kam</button>
+    <button class="tab-btn" onclick="showJadwal('Jumat',this)">Jum</button>
+    <button class="tab-btn" onclick="showJadwal('Sabtu',this)">Sab</button>
+    <button class="tab-btn" onclick="showJadwal('Minggu',this)">Min</button>
   </div>
   <div class="card">
     <table class="jadwal-table">
@@ -633,109 +754,106 @@ pre { font-family: var(--font-mono); font-size: 12px; background: var(--bg3); bo
   </div>
 </section>
 
-<!-- ────────── CHAT AI ────────── -->
+<!-- ── CHAT AI ── -->
 <section class="page" id="page-chat">
   <div class="page-header">
     <div class="flex-between">
-      <div><h1>💬 Chat AI</h1><p>Powered by qwen2.5:14b via Ollama</p></div>
-      <button class="btn btn-ghost btn-sm" onclick="clearChat()"><i class="ti ti-trash"></i> Clear</button>
+      <div><h1>💬 Chat AI</h1><p id="chat-mode-sub">Mode: Umum</p></div>
+      <button class="btn btn-ghost btn-sm" onclick="clearChat()"><i class="ti ti-trash"></i></button>
     </div>
   </div>
-  <div class="chat-sys-info">
-    <i class="ti ti-circle-filled" style="color:var(--cyan);font-size:8px"></i>
-    Mode aktif: <strong id="mode-label">💬 Umum</strong>
-  </div>
   <div class="mode-bar" id="mode-bar">
-    <button class="mode-btn active" onclick="setMode('general', this)" data-mode="general">💬 Umum</button>
-    <button class="mode-btn" onclick="setMode('lomba_ai', this)" data-mode="lomba_ai">🤖 Lomba AI</button>
-    <button class="mode-btn" onclick="setMode('bisnis', this)" data-mode="bisnis">💼 Bisnis</button>
-    <button class="mode-btn" onclick="setMode('riset', this)" data-mode="riset">📄 Riset</button>
-    <button class="mode-btn" onclick="setMode('ctf', this)" data-mode="ctf">🔐 CTF</button>
-    <button class="mode-btn" onclick="setMode('planner', this)" data-mode="planner">📋 Planner</button>
+    <button class="mode-btn active" onclick="setMode('general',this)" data-mode="general">💬 Umum</button>
+    <button class="mode-btn" onclick="setMode('lomba_ai',this)" data-mode="lomba_ai">🤖 Lomba AI</button>
+    <button class="mode-btn" onclick="setMode('bisnis',this)" data-mode="bisnis">💼 Bisnis</button>
+    <button class="mode-btn" onclick="setMode('riset',this)" data-mode="riset">📄 Riset</button>
+    <button class="mode-btn" onclick="setMode('ctf',this)" data-mode="ctf">🔐 CTF</button>
+    <button class="mode-btn" onclick="setMode('planner',this)" data-mode="planner">📋 Planner</button>
   </div>
   <div class="chat-wrap">
     <div class="chat-box" id="chat-box">
-      <div class="empty-state"><i class="ti ti-robot"></i><p>Mulai percakapan. Pilih mode yang sesuai konteksmu.</p></div>
+      <div class="empty-state"><i class="ti ti-robot"></i><p>Pilih mode lalu mulai percakapan.</p></div>
     </div>
     <div class="chat-input-row">
       <input class="form-input chat-input" id="chat-input" placeholder="Tulis pesan..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}">
       <button class="btn btn-primary" id="chat-send-btn" onclick="sendChat()"><i class="ti ti-send"></i></button>
-      <button class="btn btn-ghost btn-sm" onclick="saveLastToVault()" title="Simpan respons AI terakhir ke Idea Vault"><i class="ti ti-bulb"></i></button>
+      <button class="btn btn-ghost btn-sm" onclick="saveLastToVault()" title="Simpan ke Vault"><i class="ti ti-bulb"></i></button>
     </div>
   </div>
 </section>
 
-<!-- ────────── IDEA VAULT ────────── -->
+<!-- ── IDEA VAULT ── -->
 <section class="page" id="page-ideas">
   <div class="page-header">
     <div class="flex-between">
-      <div><h1>🗃️ Idea Vault</h1><p>Simpan semua output brainstorm penting</p></div>
-      <button class="btn btn-primary" onclick="openModal('modal-idea')"><i class="ti ti-plus"></i> Tambah Ide</button>
+      <div><h1>🗃️ Idea Vault</h1><p>Simpan output brainstorm</p></div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modal-idea')"><i class="ti ti-plus"></i> Tambah</button>
     </div>
   </div>
-  <div class="flex-row mb-16" style="gap:10px;flex-wrap:wrap">
-    <input class="form-input" id="idea-search" placeholder="🔍 Cari judul, konten, tag..." style="flex:1;min-width:200px" oninput="loadIdeas()">
-    <div class="tabs" style="margin:0;padding:0;border:none;background:transparent;gap:4px">
-      <button class="tab-btn active" onclick="filterIdeas('semua',this)">Semua</button>
-      <button class="tab-btn" onclick="filterIdeas('favorit',this)">⭐ Favorit</button>
-      <button class="tab-btn" onclick="filterIdeas('bisnis',this)">💼 Bisnis</button>
-      <button class="tab-btn" onclick="filterIdeas('riset',this)">📄 Riset</button>
-      <button class="tab-btn" onclick="filterIdeas('lomba',this)">🤖 Lomba</button>
-    </div>
+  <div class="mb-12 flex-row" style="flex-wrap:wrap;gap:8px">
+    <input class="form-input" id="idea-search" placeholder="🔍 Cari..." style="flex:1;min-width:160px" oninput="loadIdeas()">
   </div>
-  <div class="grid-2" id="ideas-grid"></div>
+  <div class="tabs" style="margin-bottom:12px">
+    <button class="tab-btn active" onclick="filterIdeas('semua',this)">Semua</button>
+    <button class="tab-btn" onclick="filterIdeas('favorit',this)">⭐ Favorit</button>
+    <button class="tab-btn" onclick="filterIdeas('bisnis',this)">💼 Bisnis</button>
+    <button class="tab-btn" onclick="filterIdeas('riset',this)">📄 Riset</button>
+    <button class="tab-btn" onclick="filterIdeas('lomba',this)">🤖 Lomba</button>
+  </div>
+  <div id="ideas-grid"></div>
 </section>
 
-<!-- ────────── FLASHCARD ────────── -->
+<!-- ── FLASHCARD ── -->
 <section class="page" id="page-flashcard">
-  <div class="page-header"><h1>📋 Flashcard Generator</h1><p>Paste teks, AI buat flashcard otomatis</p></div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title"><i class="ti ti-file-text"></i> Input Teks</div>
-      <textarea class="form-textarea" id="fc-input" style="min-height:200px" placeholder="Paste materi kuliah atau artikel di sini..."></textarea>
-      <div style="margin-top:10px">
-        <button class="btn btn-primary" id="fc-btn" onclick="generateFlashcard()"><i class="ti ti-sparkles"></i> Generate Flashcard</button>
-      </div>
+  <div class="page-header"><h1>📋 Flashcard</h1><p>Generate dari teks materi</p></div>
+  <div class="card mb-12">
+    <div class="card-title"><i class="ti ti-file-text"></i> Input Teks</div>
+    <textarea class="form-textarea" id="fc-input" style="min-height:150px" placeholder="Paste materi kuliah..."></textarea>
+    <div style="margin-top:10px">
+      <button class="btn btn-primary" id="fc-btn" onclick="generateFlashcard()"><i class="ti ti-sparkles"></i> Generate</button>
     </div>
-    <div class="card">
-      <div class="card-title"><i class="ti ti-cards"></i> Hasil</div>
-      <div id="fc-result"><div class="empty-state"><i class="ti ti-cards"></i><p>Hasil flashcard muncul di sini</p></div></div>
-    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-cards"></i> Hasil</div>
+    <div id="fc-result"><div class="empty-state"><i class="ti ti-cards"></i><p>Hasil muncul di sini</p></div></div>
   </div>
 </section>
 
-<!-- ────────── QUICK NOTES ────────── -->
+<!-- ── QUICK NOTES ── -->
 <section class="page" id="page-notes">
-  <div class="page-header"><h1>📝 Quick Notes</h1><p>Capture ide cepat tanpa ribet</p></div>
-  <div class="card mb-16">
+  <div class="page-header"><h1>📝 Quick Notes</h1><p>Capture ide cepat</p></div>
+  <div class="card mb-12">
     <div class="flex-row">
-      <textarea class="form-textarea" id="note-input" style="min-height:60px;flex:1" placeholder="Tulis catatan cepat... (Enter untuk simpan)"></textarea>
+      <textarea class="form-textarea" id="note-input" style="min-height:60px;flex:1" placeholder="Tulis catatan..."></textarea>
       <button class="btn btn-primary" style="align-self:flex-end" onclick="saveNote()"><i class="ti ti-send"></i></button>
     </div>
   </div>
   <div id="notes-list"></div>
 </section>
 
-<!-- ────────── LAUNCHER ────────── -->
+<!-- ── LAUNCHER ── -->
 <section class="page" id="page-launcher">
   <div class="page-header"><h1>🚀 Launcher</h1><p>Buka aplikasi eksternal</p></div>
   <div class="grid-3">
-    <div class="app-card" onclick="bukaApp('zotero')">
-      <i class="ti ti-books"></i><span>Zotero</span><div style="font-size:11px;color:var(--muted);margin-top:4px">Manajemen referensi</div>
-    </div>
-    <div class="app-card" onclick="bukaApp('anki')">
-      <i class="ti ti-cards"></i><span>Anki</span><div style="font-size:11px;color:var(--muted);margin-top:4px">Spaced repetition</div>
-    </div>
-    <div class="app-card" onclick="bukaApp('anythingllm')">
-      <i class="ti ti-robot"></i><span>AnythingLLM</span><div style="font-size:11px;color:var(--muted);margin-top:4px">Local AI dengan dokumen</div>
-    </div>
+    <div class="app-card" onclick="bukaApp('zotero')"><i class="ti ti-books"></i><span>Zotero</span><div style="font-size:11px;color:var(--muted);margin-top:4px">Referensi</div></div>
+    <div class="app-card" onclick="bukaApp('anki')"><i class="ti ti-cards"></i><span>Anki</span><div style="font-size:11px;color:var(--muted);margin-top:4px">Flashcard</div></div>
+    <div class="app-card" onclick="bukaApp('anythingllm')"><i class="ti ti-robot"></i><span>AnythingLLM</span><div style="font-size:11px;color:var(--muted);margin-top:4px">Local AI</div></div>
   </div>
 </section>
 
-</main><!-- /main -->
+</main>
+</div>
 
-<!-- ═══════════════ MODALS ═══════════════ -->
+<!-- ═══════════ BOTTOM NAV (mobile) ═══════════ -->
+<div class="bottom-nav">
+  <div class="bnav-item active" id="bn-dashboard" onclick="showPage('dashboard')"><i class="ti ti-layout-dashboard"></i><span>Home</span></div>
+  <div class="bnav-item" id="bn-tugas" onclick="showPage('tugas')"><i class="ti ti-checkbox"></i><span>Tugas</span></div>
+  <div class="bnav-item" id="bn-events" onclick="showPage('events')"><i class="ti ti-trophy"></i><span>Events</span></div>
+  <div class="bnav-item" id="bn-jadwal" onclick="showPage('jadwal')"><i class="ti ti-calendar"></i><span>Jadwal</span></div>
+  <div class="bnav-item" id="bn-chat" onclick="showPage('chat')"><i class="ti ti-message-circle-2"></i><span>Chat</span></div>
+</div>
 
+<!-- ═══════════ MODALS ═══════════ -->
 <!-- Modal Tambah Tugas -->
 <div class="modal-overlay" id="modal-tugas">
 <div class="modal">
@@ -752,9 +870,7 @@ pre { font-family: var(--font-mono); font-size: 12px; background: var(--bg3); bo
   </div>
   <div class="form-group"><label class="form-label">Deadline (DD/MM/YYYY)</label><input class="form-input" id="t-deadline" placeholder="30/05/2026"></div>
   <div class="form-group"><label class="form-label">Prioritas</label>
-    <select class="form-select" id="t-prioritas">
-      <option value="normal">Normal</option><option value="tinggi">Tinggi</option><option value="rendah">Rendah</option>
-    </select>
+    <select class="form-select" id="t-prioritas"><option value="normal">Normal</option><option value="tinggi">Tinggi</option><option value="rendah">Rendah</option></select>
   </div>
   <div class="form-group"><label class="form-label">Catatan</label><textarea class="form-textarea" id="t-catatan" placeholder="Materi chapter 1-5..."></textarea></div>
   <div class="modal-footer">
@@ -768,23 +884,19 @@ pre { font-family: var(--font-mono); font-size: 12px; background: var(--bg3); bo
 <div class="modal-overlay" id="modal-event">
 <div class="modal">
   <div class="modal-header"><span class="modal-title">TAMBAH EVENT</span><span class="modal-close" onclick="closeModal('modal-event')">✕</span></div>
-  <div class="form-group"><label class="form-label">Nama Event *</label><input class="form-input" id="e-nama" placeholder="Gemastik XVII — Kategori AI..."></div>
+  <div class="form-group"><label class="form-label">Nama Event *</label><input class="form-input" id="e-nama" placeholder="Gemastik XVII..."></div>
   <div class="form-group"><label class="form-label">Kategori</label>
     <select class="form-select" id="e-kategori">
-      <option value="lomba_ai">🤖 Lomba AI</option>
-      <option value="hackathon">💻 Hackathon</option>
-      <option value="ctf">🔐 CTF</option>
-      <option value="jurnal">📄 Jurnal</option>
-      <option value="bisnis">💼 Bisnis</option>
-      <option value="organisasi">🏛️ Organisasi</option>
+      <option value="lomba_ai">🤖 Lomba AI</option><option value="hackathon">💻 Hackathon</option>
+      <option value="ctf">🔐 CTF</option><option value="jurnal">📄 Jurnal</option>
+      <option value="bisnis">💼 Bisnis</option><option value="organisasi">🏛️ Organisasi</option>
       <option value="deadline_penting">⚡ Deadline Penting</option>
     </select>
   </div>
   <div class="form-group"><label class="form-label">Deadline (DD/MM/YYYY)</label><input class="form-input" id="e-deadline" placeholder="15/08/2026"></div>
-  <div class="form-group"><label class="form-label">Peranmu</label><input class="form-input" id="e-peran" placeholder="Ketua Tim, Anggota, Solo..."></div>
-  <div class="form-group"><label class="form-label">Tim (comma-separated)</label><input class="form-input" id="e-tim" placeholder="Koman, Reza, Dinda"></div>
-  <div class="form-group"><label class="form-label">Deskripsi</label><textarea class="form-textarea" id="e-deskripsi" placeholder="Detail kompetisi..."></textarea></div>
-  <div class="form-group"><label class="form-label">Catatan</label><textarea class="form-textarea" id="e-catatan" placeholder="Catatan tambahan..."></textarea></div>
+  <div class="form-group"><label class="form-label">Peranmu</label><input class="form-input" id="e-peran" placeholder="Ketua Tim..."></div>
+  <div class="form-group"><label class="form-label">Tim (comma-separated)</label><input class="form-input" id="e-tim" placeholder="Koman, Reza"></div>
+  <div class="form-group"><label class="form-label">Deskripsi</label><textarea class="form-textarea" id="e-deskripsi" placeholder="Detail..."></textarea></div>
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal('modal-event')">Batal</button>
     <button class="btn btn-primary" id="btn-save-event" onclick="saveEvent()"><i class="ti ti-plus"></i> Tambah</button>
@@ -810,7 +922,6 @@ pre { font-family: var(--font-mono); font-size: 12px; background: var(--bg3); bo
   <div class="form-group"><label class="form-label">Peran</label><input class="form-input" id="ee-peran"></div>
   <div class="form-group"><label class="form-label">Tim</label><input class="form-input" id="ee-tim"></div>
   <div class="form-group"><label class="form-label">Deskripsi</label><textarea class="form-textarea" id="ee-deskripsi"></textarea></div>
-  <div class="form-group"><label class="form-label">Catatan</label><textarea class="form-textarea" id="ee-catatan"></textarea></div>
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal('modal-event-edit')">Batal</button>
     <button class="btn btn-primary" onclick="updateEvent()">Simpan</button>
@@ -818,13 +929,13 @@ pre { font-family: var(--font-mono); font-size: 12px; background: var(--bg3); bo
 </div>
 </div>
 
-<!-- Modal Tambah Milestone (Event) -->
+<!-- Modal Milestone -->
 <div class="modal-overlay" id="modal-milestone">
-<div class="modal" style="max-width:380px">
+<div class="modal">
   <div class="modal-header"><span class="modal-title">TAMBAH MILESTONE</span><span class="modal-close" onclick="closeModal('modal-milestone')">✕</span></div>
   <input type="hidden" id="ms-eid">
   <div class="form-group"><label class="form-label">Nama Milestone *</label><input class="form-input" id="ms-nama" placeholder="Submit proposal..."></div>
-  <div class="form-group"><label class="form-label">Deadline (DD/MM/YYYY)</label><input class="form-input" id="ms-deadline" placeholder="20/06/2026"></div>
+  <div class="form-group"><label class="form-label">Deadline</label><input class="form-input" id="ms-deadline" placeholder="20/06/2026"></div>
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal('modal-milestone')">Batal</button>
     <button class="btn btn-primary" onclick="saveMilestone()">Tambah</button>
@@ -834,10 +945,10 @@ pre { font-family: var(--font-mono); font-size: 12px; background: var(--bg3); bo
 
 <!-- Modal Selesai Event -->
 <div class="modal-overlay" id="modal-event-selesai">
-<div class="modal" style="max-width:380px">
+<div class="modal">
   <div class="modal-header"><span class="modal-title">TANDAI SELESAI</span><span class="modal-close" onclick="closeModal('modal-event-selesai')">✕</span></div>
   <input type="hidden" id="es-id">
-  <div class="form-group"><label class="form-label">Hasil / Catatan Akhir</label><textarea class="form-textarea" id="es-hasil" placeholder="Menang juara 2, atau tidak lolos, dll..."></textarea></div>
+  <div class="form-group"><label class="form-label">Hasil / Catatan Akhir</label><textarea class="form-textarea" id="es-hasil" placeholder="Menang juara 2..."></textarea></div>
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal('modal-event-selesai')">Batal</button>
     <button class="btn btn-primary" onclick="konfirmasiSelesaiEvent()">Selesai</button>
@@ -849,18 +960,15 @@ pre { font-family: var(--font-mono); font-size: 12px; background: var(--bg3); bo
 <div class="modal-overlay" id="modal-goal">
 <div class="modal">
   <div class="modal-header"><span class="modal-title">TAMBAH GOAL</span><span class="modal-close" onclick="closeModal('modal-goal')">✕</span></div>
-  <div class="form-group"><label class="form-label">Nama Goal *</label><input class="form-input" id="g-nama" placeholder="Menang / finalis 1 lomba AI semester ini"></div>
+  <div class="form-group"><label class="form-label">Nama Goal *</label><input class="form-input" id="g-nama" placeholder="Menang 1 lomba AI semester ini"></div>
   <div class="form-group"><label class="form-label">Kategori</label>
     <select class="form-select" id="g-kategori">
-      <option value="kompetisi">🏆 Kompetisi</option>
-      <option value="akademik">📚 Akademik</option>
-      <option value="bisnis">💼 Bisnis</option>
-      <option value="riset">📄 Riset</option>
-      <option value="personal">🌱 Personal</option>
+      <option value="kompetisi">🏆 Kompetisi</option><option value="akademik">📚 Akademik</option>
+      <option value="bisnis">💼 Bisnis</option><option value="riset">📄 Riset</option><option value="personal">🌱 Personal</option>
     </select>
   </div>
-  <div class="form-group"><label class="form-label">Deadline (DD/MM/YYYY)</label><input class="form-input" id="g-deadline" placeholder="31/12/2026"></div>
-  <div class="form-group"><label class="form-label">Deskripsi</label><textarea class="form-textarea" id="g-deskripsi" placeholder="Detail target yang ingin dicapai..."></textarea></div>
+  <div class="form-group"><label class="form-label">Deadline</label><input class="form-input" id="g-deadline" placeholder="31/12/2026"></div>
+  <div class="form-group"><label class="form-label">Deskripsi</label><textarea class="form-textarea" id="g-deskripsi" placeholder="Detail target..."></textarea></div>
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal('modal-goal')">Batal</button>
     <button class="btn btn-primary" onclick="saveGoal()"><i class="ti ti-plus"></i> Tambah</button>
@@ -872,16 +980,15 @@ pre { font-family: var(--font-mono); font-size: 12px; background: var(--bg3); bo
 <div class="modal-overlay" id="modal-idea">
 <div class="modal">
   <div class="modal-header"><span class="modal-title">SIMPAN IDE</span><span class="modal-close" onclick="closeModal('modal-idea')">✕</span></div>
-  <div class="form-group"><label class="form-label">Judul *</label><input class="form-input" id="i-judul" placeholder="Sistem deteksi anomali untuk UMKM..."></div>
+  <div class="form-group"><label class="form-label">Judul *</label><input class="form-input" id="i-judul" placeholder="Nama ide..."></div>
   <div class="form-group"><label class="form-label">Kategori</label>
     <select class="form-select" id="i-kategori">
       <option value="umum">Umum</option><option value="bisnis">💼 Bisnis</option>
-      <option value="riset">📄 Riset</option><option value="lomba">🤖 Lomba</option>
-      <option value="teknis">🔧 Teknis</option>
+      <option value="riset">📄 Riset</option><option value="lomba">🤖 Lomba</option><option value="teknis">🔧 Teknis</option>
     </select>
   </div>
-  <div class="form-group"><label class="form-label">Konten / Isi Ide</label><textarea class="form-textarea" id="i-konten" style="min-height:120px" placeholder="Tulis detail ide, hasil brainstorm..."></textarea></div>
-  <div class="form-group"><label class="form-label">Tags (comma-separated)</label><input class="form-input" id="i-tags" placeholder="ai, ml, bisnis, yolo..."></div>
+  <div class="form-group"><label class="form-label">Konten</label><textarea class="form-textarea" id="i-konten" style="min-height:100px" placeholder="Isi ide..."></textarea></div>
+  <div class="form-group"><label class="form-label">Tags (comma-separated)</label><input class="form-input" id="i-tags" placeholder="ai, ml, bisnis..."></div>
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal('modal-idea')">Batal</button>
     <button class="btn btn-primary" onclick="saveIdea()"><i class="ti ti-plus"></i> Simpan</button>
@@ -891,9 +998,9 @@ pre { font-family: var(--font-mono); font-size: 12px; background: var(--bg3); bo
 
 <!-- Modal Baca Idea -->
 <div class="modal-overlay" id="modal-idea-view">
-<div class="modal" style="max-width:620px">
+<div class="modal">
   <div class="modal-header"><span class="modal-title" id="iv-judul"></span><span class="modal-close" onclick="closeModal('modal-idea-view')">✕</span></div>
-  <div id="iv-konten" style="font-size:13px;line-height:1.7;color:var(--text);margin-bottom:14px;white-space:pre-wrap"></div>
+  <div id="iv-konten" style="font-size:13px;line-height:1.7;color:var(--text);margin-bottom:12px;white-space:pre-wrap"></div>
   <div id="iv-meta" style="font-size:11px;color:var(--muted)"></div>
   <div class="modal-footer">
     <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-idea-view')">Tutup</button>
@@ -903,26 +1010,21 @@ pre { font-family: var(--font-mono); font-size: 12px; background: var(--bg3); bo
 </div>
 </div>
 
-<!-- Toast container -->
 <div class="toast-container" id="toast-container"></div>
 
-<!-- ═══════════════ JAVASCRIPT ═══════════════ -->
 <script>
-const API = 'https://ai-jadwal-production.up.railway.app/api';
+// Ganti dengan URL Railway kamu
+const API = window.location.hostname === 'localhost'
+  ? 'http://localhost:5000/api'
+  : window.location.origin + '/api';
 
-// ─── STATE ──────────────────────────────────────────────────────────────────
-let chatHistory = [];
-let chatMode    = 'general';
-let lastAiMsg   = '';
-let allTugas    = [];
-let allEvents   = [];
-let allGoals    = [];
-let tugasFilter = 'semua';
-let eventsFilter= 'semua';
-let ideasFilter = 'semua';
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let chatHistory = [], chatMode = 'general', lastAiMsg = '';
+let allTugas = [], allEvents = [], allGoals = [];
+let tugasFilter = 'semua', eventsFilter = 'semua', ideasFilter = 'semua';
 let currentIdeaId = null;
 
-// ─── UTILS ──────────────────────────────────────────────────────────────────
+// ─── UTILS ────────────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 
 function toast(msg, type='success') {
@@ -936,231 +1038,160 @@ function toast(msg, type='success') {
 
 function openModal(id) { $(id).classList.add('open'); }
 function closeModal(id) { $(id).classList.remove('open'); }
+function openDrawer() { $('drawer').classList.add('open'); $('drawer-overlay').classList.add('open'); }
+function closeDrawer() { $('drawer').classList.remove('open'); $('drawer-overlay').classList.remove('open'); }
 
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  $(`page-${name}`).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => {
-    if (n.getAttribute('onclick')?.includes(`'${name}'`)) n.classList.add('active');
-  });
-  if (name === 'dashboard') loadDashboard();
-  else if (name === 'tugas') loadTugas();
-  else if (name === 'events') loadEvents();
-  else if (name === 'goals') loadGoals();
-  else if (name === 'jadwal') { initJadwal(); }
-  else if (name === 'ideas') loadIdeas();
-  else if (name === 'notes') loadNotes();
+  document.querySelectorAll('.nav-item, .bnav-item').forEach(n => n.classList.remove('active'));
+  $(`page-${name}`)?.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => { if (n.getAttribute('onclick')?.includes(`'${name}'`)) n.classList.add('active'); });
+  const bn = $(`bn-${name}`);
+  if (bn) bn.classList.add('active');
+  if (name==='dashboard') loadDashboard();
+  else if (name==='tugas') loadTugas();
+  else if (name==='events') loadEvents();
+  else if (name==='goals') loadGoals();
+  else if (name==='jadwal') initJadwal();
+  else if (name==='ideas') loadIdeas();
+  else if (name==='notes') loadNotes();
 }
 
 function sisaHariLabel(n) {
-  if (n === null || n === undefined) return '';
-  if (n < 0)  return `<span class="badge badge-red">${Math.abs(n)} hari lalu</span>`;
-  if (n === 0) return `<span class="badge badge-red">Hari ini!</span>`;
-  if (n <= 3)  return `<span class="badge badge-red">${n} hari</span>`;
-  if (n <= 7)  return `<span class="badge badge-amber">${n} hari</span>`;
-  return `<span class="badge badge-blue">${n} hari</span>`;
+  if (n===null||n===undefined) return '';
+  if (n<0) return `<span class="badge badge-red">${Math.abs(n)}h lalu</span>`;
+  if (n===0) return `<span class="badge badge-red">Hari ini!</span>`;
+  if (n<=3) return `<span class="badge badge-red">${n}h</span>`;
+  if (n<=7) return `<span class="badge badge-amber">${n}h</span>`;
+  return `<span class="badge badge-blue">${n}h</span>`;
 }
 
 function prioritasBadge(p) {
-  const map = { tinggi:'badge-red', normal:'badge-blue', rendah:'badge-cyan' };
+  const map = {tinggi:'badge-red',normal:'badge-blue',rendah:'badge-cyan'};
   return `<span class="badge ${map[p]||'badge-blue'}">${p||'normal'}</span>`;
 }
 
 const KATEGORI_INFO = {
-  lomba_ai:       { icon:'🤖', label:'Lomba AI',       badge:'badge-amber' },
-  hackathon:      { icon:'💻', label:'Hackathon',      badge:'badge-blue' },
-  ctf:            { icon:'🔐', label:'CTF',             badge:'badge-purple' },
-  jurnal:         { icon:'📄', label:'Jurnal',          badge:'badge-cyan' },
-  bisnis:         { icon:'💼', label:'Bisnis',          badge:'badge-green' },
-  organisasi:     { icon:'🏛️', label:'Organisasi',    badge:'badge-pink' },
-  deadline_penting:{ icon:'⚡', label:'Deadline',      badge:'badge-red' },
+  lomba_ai:{icon:'🤖',label:'Lomba AI',badge:'badge-amber'},
+  hackathon:{icon:'💻',label:'Hackathon',badge:'badge-blue'},
+  ctf:{icon:'🔐',label:'CTF',badge:'badge-purple'},
+  jurnal:{icon:'📄',label:'Jurnal',badge:'badge-cyan'},
+  bisnis:{icon:'💼',label:'Bisnis',badge:'badge-green'},
+  organisasi:{icon:'🏛️',label:'Org',badge:'badge-pink'},
+  deadline_penting:{icon:'⚡',label:'Deadline',badge:'badge-red'},
 };
 
 function katBadge(k) {
-  const info = KATEGORI_INFO[k] || { icon:'📌', label: k, badge: 'badge-blue' };
-  return `<span class="badge ${info.badge}">${info.icon} ${info.label}</span>`;
+  const i = KATEGORI_INFO[k]||{icon:'📌',label:k,badge:'badge-blue'};
+  return `<span class="badge ${i.badge}">${i.icon} ${i.label}</span>`;
 }
 
 function md2html(text) {
   return text
-    .replace(/```([\s\S]*?)```/g, '<pre>$1</pre>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-    .replace(/^- (.+)$/gm, '• $1')
-    .replace(/\n/g, '<br>');
+    .replace(/```([\s\S]*?)```/g,'<pre>$1</pre>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g,'<em>$1</em>')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/^- (.+)$/gm,'• $1')
+    .replace(/\n/g,'<br>');
 }
 
-// ─── DASHBOARD ──────────────────────────────────────────────────────────────
+function escHtml(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
 function loadDashboard() {
   const now = new Date();
   const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
   const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-  const hari = days[now.getDay()];
-  $('dash-greeting').textContent = `Selamat ${now.getHours()<12?'pagi':now.getHours()<15?'siang':'sore'}, Koman 👋`;
-  $('dash-date').textContent = `${hari}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  const jam = now.getHours();
+  $('dash-greeting').textContent = `${jam<12?'Pagi':jam<15?'Siang':'Sore'}, Koman 👋`;
+  $('dash-date').textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
 
   fetch(`${API}/dashboard`)
-    .then(r => r.json())
+    .then(r=>r.json())
     .then(d => {
-      // Stats
-      $('st-tugas').textContent    = d.stats.tugas_aktif;
-      $('st-events').textContent   = d.stats.events_aktif;
-      $('st-goals').textContent    = d.stats.goals_aktif;
-      $('st-kuliah').textContent   = d.stats.kuliah_hari_ini;
+      $('st-tugas').textContent = d.stats.tugas_aktif;
+      $('st-events').textContent = d.stats.events_aktif;
+      $('st-goals').textContent = d.stats.goals_aktif;
+      $('st-kuliah').textContent = d.stats.kuliah_hari_ini;
       $('st-mendesak').textContent = d.stats.mendesak;
 
-      // Badges sidebar
       const bt = $('badge-tugas');
-      if (d.stats.mendesak > 0) { bt.textContent = d.stats.mendesak; bt.style.display='flex'; }
-      else bt.style.display = 'none';
+      if (d.stats.mendesak>0) { bt.textContent=d.stats.mendesak; bt.style.display='flex'; }
+      else bt.style.display='none';
 
-      // Jadwal
-      if (d.jadwal.length === 0) {
-        $('dash-jadwal').innerHTML = `<div class="empty-state"><i class="ti ti-coffee"></i><p>Tidak ada kuliah ${d.hari || 'hari ini'} 🎉</p></div>`;
-      } else {
-        $('dash-jadwal').innerHTML = d.jadwal.map(j => `
-          <div class="sched-chip">
-            <span class="time">${j.jam}</span>
-            <div><div class="matkul">${j.mata_kuliah.split(' (')[0]}</div><div class="ruang">${j.ruang}</div></div>
-          </div>`).join('');
-      }
+      $('dash-jadwal').innerHTML = d.jadwal.length===0
+        ? `<div class="empty-state"><i class="ti ti-coffee"></i><p>Tidak ada kuliah 🎉</p></div>`
+        : d.jadwal.map(j=>`<div class="sched-chip"><span class="time">${j.jam}</span><div><div class="matkul">${j.mata_kuliah.split(' (')[0]}</div><div class="ruang">${j.ruang}</div></div></div>`).join('');
 
-      // Events mendatang
-      if (d.events_mendatang.length === 0) {
-        $('dash-events').innerHTML = `<div class="empty-state"><i class="ti ti-trophy"></i><p>Tidak ada event mendatang</p></div>`;
-      } else {
-        $('dash-events').innerHTML = d.events_mendatang.map(e => `
-          <div class="item-row">
-            <div class="item-main">
-              <div class="item-title">${KATEGORI_INFO[e.kategori]?.icon||'📌'} ${e.nama}</div>
-              <div class="item-sub">${e.deadline}</div>
-            </div>
-            ${sisaHariLabel(e.sisa_hari)}
-          </div>`).join('');
-      }
+      $('dash-events').innerHTML = d.events_mendatang.length===0
+        ? `<div class="empty-state"><i class="ti ti-trophy"></i><p>Tidak ada event mendatang</p></div>`
+        : d.events_mendatang.map(e=>`<div class="item-row"><div class="item-main"><div class="item-title">${KATEGORI_INFO[e.kategori]?.icon||'📌'} ${e.nama}</div><div class="item-sub">${e.deadline}</div></div>${sisaHariLabel(e.sisa_hari)}</div>`).join('');
 
-      // Tugas mendesak
-      if (d.tugas_mendesak.length === 0) {
-        $('dash-tugas-mendesak').innerHTML = `<div class="empty-state"><i class="ti ti-check"></i><p>Tidak ada tugas mendesak</p></div>`;
-      } else {
-        $('dash-tugas-mendesak').innerHTML = d.tugas_mendesak.map(t => `
-          <div class="item-row">
-            <div class="item-main">
-              <div class="item-title">${t.nama}</div>
-              <div class="item-sub">${t.matkul} · ${t.deadline}</div>
-            </div>
-            ${sisaHariLabel(t.sisa_hari)}
-          </div>`).join('');
-      }
+      $('dash-tugas-mendesak').innerHTML = d.tugas_mendesak.length===0
+        ? `<div class="empty-state"><i class="ti ti-check"></i><p>Tidak ada tugas mendesak</p></div>`
+        : d.tugas_mendesak.map(t=>`<div class="item-row"><div class="item-main"><div class="item-title">${t.nama}</div><div class="item-sub">${t.matkul} · ${t.deadline}</div></div>${sisaHariLabel(t.sisa_hari)}</div>`).join('');
 
-      // Goals top 3
-      if (d.goals_aktif.length === 0) {
-        $('dash-goals').innerHTML = `<div class="empty-state"><i class="ti ti-target"></i><p>Belum ada goal. Yuk set target!</p></div>`;
-      } else {
-        $('dash-goals').innerHTML = d.goals_aktif.map(g => `
-          <div style="margin-bottom:12px">
-            <div class="flex-between" style="margin-bottom:4px">
-              <span style="font-size:13px;font-weight:500">${g.nama}</span>
-              <span class="goal-pct">${g.progress}%</span>
-            </div>
-            <div class="progress-wrap"><div class="progress-bar ${g.progress>=100?'green':g.progress>=50?'':'amber'}" style="width:${g.progress}%"></div></div>
-          </div>`).join('');
-      }
+      $('dash-goals').innerHTML = d.goals_aktif.length===0
+        ? `<div class="empty-state"><i class="ti ti-target"></i><p>Belum ada goal</p></div>`
+        : d.goals_aktif.map(g=>`<div style="margin-bottom:12px"><div class="flex-between" style="margin-bottom:4px"><span style="font-size:12px;font-weight:500">${g.nama}</span><span class="goal-pct">${g.progress}%</span></div><div class="progress-wrap"><div class="progress-bar ${g.progress>=100?'green':''}" style="width:${g.progress}%"></div></div></div>`).join('');
 
-      // Bar chart matkul
-      const mkData = Object.entries(d.per_matkul);
-      const mkMax  = Math.max(...mkData.map(x=>x[1]), 1);
-      if (mkData.length === 0) {
-        $('dash-matkul').innerHTML = `<div class="empty-state"><p>Tidak ada tugas aktif</p></div>`;
-      } else {
-        $('dash-matkul').innerHTML = mkData.map(([mk, n]) => `
-          <div class="bar-row">
-            <div class="bar-label" title="${mk}">${mk.split(' (')[0]}</div>
-            <div class="bar-track"><div class="bar-fill" style="width:${n/mkMax*100}%"></div></div>
-            <div class="bar-num">${n}</div>
-          </div>`).join('');
-      }
+      const mkData = Object.entries(d.per_matkul||{});
+      const mkMax = Math.max(...mkData.map(x=>x[1]),1);
+      $('dash-matkul').innerHTML = mkData.length===0
+        ? `<div class="empty-state"><p>Tidak ada tugas aktif</p></div>`
+        : mkData.map(([mk,n])=>`<div class="bar-row"><div class="bar-label" title="${mk}">${mk.split(' (')[0]}</div><div class="bar-track"><div class="bar-fill" style="width:${n/mkMax*100}%"></div></div><div class="bar-num">${n}</div></div>`).join('');
 
-      // Quick notes
-      if (d.quicknotes.length === 0) {
-        $('dash-notes').innerHTML = `<div style="font-size:12px;color:var(--muted);padding:8px 0">Belum ada catatan.</div>`;
-      } else {
-        $('dash-notes').innerHTML = d.quicknotes.map(n => `
-          <div class="note-item">
-            <div class="note-konten">${n.konten}<div class="note-time">${n.dibuat}</div></div>
-          </div>`).join('');
-      }
+      $('dash-notes').innerHTML = d.quicknotes.length===0
+        ? `<div style="font-size:12px;color:var(--muted);padding:6px 0">Belum ada catatan.</div>`
+        : d.quicknotes.map(n=>`<div class="note-item"><div class="note-konten">${escHtml(n.konten)}<div class="note-time">${n.dibuat}</div></div></div>`).join('');
     })
-    .catch(() => toast('Gagal memuat dashboard — pastikan Flask berjalan', 'error'));
+    .catch(()=>toast('Gagal load dashboard','error'));
 }
 
 async function kirimBriefing() {
-  const btn = event.target;
-  btn.disabled = true; btn.textContent = 'Mengirim...';
-  const r = await fetch(`${API}/briefing`, {method:'POST'}).then(r=>r.json()).catch(()=>null);
-  btn.disabled = false; btn.innerHTML = '<i class="ti ti-send"></i> Briefing';
-  toast(r?.ok ? 'Briefing dikirim ke Telegram!' : (r?.msg || 'Gagal kirim'), r?.ok ? 'success' : 'error');
+  const r = await fetch(`${API}/briefing`,{method:'POST'}).then(r=>r.json()).catch(()=>null);
+  toast(r?.ok?'Briefing dikirim!':(r?.msg||'Gagal'),r?.ok?'success':'error');
 }
 
 function quickNoteFromDash() {
   const inp = $('dash-note-input');
   const konten = inp.value.trim();
   if (!konten) return;
-  fetch(`${API}/notes`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({konten})})
-    .then(r=>r.json()).then(d => {
-      if (d.ok) { inp.value = ''; loadDashboard(); toast('Note disimpan'); }
-      else toast(d.msg,'error');
-    });
+  fetch(`${API}/notes`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({konten})})
+    .then(r=>r.json()).then(d=>{if(d.ok){inp.value='';loadDashboard();toast('Note disimpan');}else toast(d.msg,'error');});
 }
 
-// ─── TUGAS ───────────────────────────────────────────────────────────────────
+// ─── TUGAS ────────────────────────────────────────────────────────────────────
 function loadTugas() {
-  fetch(`${API}/tugas`).then(r=>r.json()).then(data => {
-    allTugas = data;
-    renderTugas();
-  }).catch(() => toast('Gagal load tugas','error'));
+  fetch(`${API}/tugas`).then(r=>r.json()).then(data=>{allTugas=data;renderTugas();}).catch(()=>toast('Gagal load tugas','error'));
 }
 
-function filterTugas(f, btn) {
-  tugasFilter = f;
+function filterTugas(f,btn) {
+  tugasFilter=f;
   document.querySelectorAll('#tabs-tugas .tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   renderTugas();
 }
 
 function renderTugas() {
-  let data = [...allTugas];
-  if (tugasFilter === 'mendesak') data = data.filter(t => t.sisa_hari !== null && t.sisa_hari <= 3);
-  else if (tugasFilter === '7hari') data = data.filter(t => t.sisa_hari !== null && t.sisa_hari <= 7);
-  else if (tugasFilter === 'tinggi') data = data.filter(t => t.prioritas === 'tinggi');
-
-  data.sort((a,b) => {
-    if (a.sisa_hari===null) return 1;
-    if (b.sisa_hari===null) return -1;
-    return a.sisa_hari - b.sisa_hari;
-  });
-
-  if (data.length === 0) {
-    $('tugas-list').innerHTML = `<div class="empty-state"><i class="ti ti-checkbox"></i><p>Tidak ada tugas di kategori ini</p></div>`;
-    return;
-  }
-  $('tugas-list').innerHTML = data.map(t => `
+  let data=[...allTugas];
+  if(tugasFilter==='mendesak') data=data.filter(t=>t.sisa_hari!==null&&t.sisa_hari<=3);
+  else if(tugasFilter==='7hari') data=data.filter(t=>t.sisa_hari!==null&&t.sisa_hari<=7);
+  else if(tugasFilter==='tinggi') data=data.filter(t=>t.prioritas==='tinggi');
+  data.sort((a,b)=>{if(a.sisa_hari===null)return 1;if(b.sisa_hari===null)return -1;return a.sisa_hari-b.sisa_hari;});
+  if(data.length===0){$('tugas-list').innerHTML=`<div class="empty-state"><i class="ti ti-checkbox"></i><p>Tidak ada tugas di kategori ini</p></div>`;return;}
+  $('tugas-list').innerHTML=data.map(t=>`
     <div class="item-row">
       <div class="item-main">
         <div class="item-title">${t.nama}</div>
-        <div class="item-sub flex-row" style="gap:6px;flex-wrap:wrap">
-          <span>${t.matkul||'–'}</span>·<span>📅 ${t.deadline||'–'}</span>
-          ${t.catatan ? `·<span>${t.catatan}</span>` : ''}
-        </div>
+        <div class="item-sub">${t.matkul||'–'} · ${t.deadline||'–'}</div>
       </div>
-      <div class="flex-row" style="gap:6px;flex-shrink:0;flex-wrap:wrap">
-        ${prioritasBadge(t.prioritas)}
-        ${sisaHariLabel(t.sisa_hari)}
+      <div class="flex-row" style="gap:5px;flex-shrink:0;flex-wrap:wrap">
+        ${prioritasBadge(t.prioritas)}${sisaHariLabel(t.sisa_hari)}
         <div class="item-actions">
           <button class="btn btn-ghost btn-sm" onclick="selesaikanTugas('${t.nama}')"><i class="ti ti-check"></i></button>
           <button class="btn btn-danger btn-sm" onclick="hapusTugas('${t.nama}')"><i class="ti ti-trash"></i></button>
@@ -1170,210 +1201,137 @@ function renderTugas() {
 }
 
 async function saveTugas() {
-  const btn = $('btn-save-tugas'); btn.disabled=true; btn.textContent='Menyimpan...';
-  const body = {
-    nama: $('t-nama').value.trim(),
-    matkul: $('t-matkul').value,
-    deadline: $('t-deadline').value.trim(),
-    prioritas: $('t-prioritas').value,
-    catatan: $('t-catatan').value.trim(),
-  };
-  const r = await fetch(`${API}/tugas`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)}).then(r=>r.json()).catch(()=>null);
-  btn.disabled=false; btn.innerHTML='<i class="ti ti-plus"></i> Tambah';
-  if (r?.ok) {
-    closeModal('modal-tugas');
-    ['t-nama','t-deadline','t-catatan'].forEach(id => $(id).value='');
-    toast('Tugas ditambahkan'); loadTugas();
-  } else toast(r?.msg||'Gagal','error');
+  const btn=$('btn-save-tugas');btn.disabled=true;btn.textContent='...';
+  const body={nama:$('t-nama').value.trim(),matkul:$('t-matkul').value,deadline:$('t-deadline').value.trim(),prioritas:$('t-prioritas').value,catatan:$('t-catatan').value.trim()};
+  const r=await fetch(`${API}/tugas`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(()=>null);
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-plus"></i> Tambah';
+  if(r?.ok){closeModal('modal-tugas');['t-nama','t-deadline','t-catatan'].forEach(id=>$(id).value='');toast('Tugas ditambahkan');loadTugas();}
+  else toast(r?.msg||'Gagal','error');
 }
 
 async function selesaikanTugas(nama) {
-  const r = await fetch(`${API}/tugas/${encodeURIComponent(nama)}/selesai`, {method:'POST'}).then(r=>r.json()).catch(()=>null);
-  if (r?.ok) { toast('✅ Tugas selesai!'); loadTugas(); loadDashboard(); }
-  else toast(r?.msg||'Gagal','error');
+  const r=await fetch(`${API}/tugas/${encodeURIComponent(nama)}/selesai`,{method:'POST'}).then(r=>r.json()).catch(()=>null);
+  if(r?.ok){toast('✅ Selesai!');loadTugas();loadDashboard();}else toast(r?.msg||'Gagal','error');
 }
 
 async function hapusTugas(nama) {
-  if (!confirm(`Hapus tugas "${nama}"?`)) return;
-  const r = await fetch(`${API}/tugas/${encodeURIComponent(nama)}`, {method:'DELETE'}).then(r=>r.json()).catch(()=>null);
-  if (r?.ok) { toast('Tugas dihapus'); loadTugas(); }
-  else toast(r?.msg||'Gagal','error');
+  if(!confirm(`Hapus "${nama}"?`))return;
+  const r=await fetch(`${API}/tugas/${encodeURIComponent(nama)}`,{method:'DELETE'}).then(r=>r.json()).catch(()=>null);
+  if(r?.ok){toast('Dihapus');loadTugas();}else toast(r?.msg||'Gagal','error');
 }
 
-// ─── EVENTS ──────────────────────────────────────────────────────────────────
+// ─── EVENTS ───────────────────────────────────────────────────────────────────
 function loadEvents() {
-  fetch(`${API}/events`).then(r=>r.json()).then(data => {
-    allEvents = data;
-    renderEvents();
-  }).catch(() => toast('Gagal load events','error'));
+  fetch(`${API}/events`).then(r=>r.json()).then(data=>{allEvents=data;renderEvents();}).catch(()=>toast('Gagal load events','error'));
 }
 
-function filterEvents(f, btn) {
-  eventsFilter = f;
+function filterEvents(f,btn) {
+  eventsFilter=f;
   document.querySelectorAll('#tabs-events .tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   renderEvents();
 }
 
 function renderEvents() {
-  let data = eventsFilter === 'semua' ? allEvents : allEvents.filter(e => e.kategori === eventsFilter);
-  data.sort((a,b) => {
-    if (a.sisa_hari===null) return 1;
-    if (b.sisa_hari===null) return -1;
-    return a.sisa_hari - b.sisa_hari;
-  });
-  if (data.length === 0) {
-    $('events-list').innerHTML = `<div class="empty-state"><i class="ti ti-trophy"></i><p>Tidak ada event. Yuk daftar lomba!</p></div>`;
-    return;
-  }
-  $('events-list').innerHTML = data.map(e => {
-    const ms = e.milestones || [];
-    const msDone = ms.filter(m=>m.selesai).length;
-    const msPct = ms.length ? Math.round(msDone/ms.length*100) : 0;
-    return `
-    <div class="event-card">
+  let data=eventsFilter==='semua'?allEvents:allEvents.filter(e=>e.kategori===eventsFilter);
+  data.sort((a,b)=>{if(a.sisa_hari===null)return 1;if(b.sisa_hari===null)return -1;return a.sisa_hari-b.sisa_hari;});
+  if(data.length===0){$('events-list').innerHTML=`<div class="empty-state"><i class="ti ti-trophy"></i><p>Tidak ada event. Yuk daftar lomba!</p></div>`;return;}
+  $('events-list').innerHTML=data.map(e=>{
+    const ms=e.milestones||[];
+    const msDone=ms.filter(m=>m.selesai).length;
+    const msPct=ms.length?Math.round(msDone/ms.length*100):0;
+    return `<div class="event-card">
       <div class="event-card-header">
         <div class="event-card-main">
           <div class="event-title">${e.nama}</div>
-          <div class="event-meta">
-            ${katBadge(e.kategori)}
-            ${sisaHariLabel(e.sisa_hari)}
-            ${e.peran ? `<span class="badge badge-cyan">${e.peran}</span>` : ''}
-            ${e.deadline ? `<span style="font-size:11px;color:var(--muted)">📅 ${e.deadline}</span>` : ''}
-          </div>
-          ${e.deskripsi ? `<div style="font-size:12px;color:var(--muted);margin-top:5px">${e.deskripsi}</div>` : ''}
+          <div class="event-meta">${katBadge(e.kategori)}${sisaHariLabel(e.sisa_hari)}${e.peran?`<span class="badge badge-cyan">${e.peran}</span>`:''}</div>
+          ${e.deskripsi?`<div style="font-size:11px;color:var(--muted);margin-top:4px">${e.deskripsi}</div>`:''}
         </div>
         <div class="event-card-actions">
-          <button class="btn btn-ghost btn-sm" onclick="openEditEvent('${e.id}')" title="Edit"><i class="ti ti-edit"></i></button>
-          <button class="btn btn-ghost btn-sm" onclick="openAddMilestone('${e.id}')" title="+ Milestone"><i class="ti ti-plus"></i></button>
-          <button class="btn btn-amber btn-sm" onclick="openSelesaiEvent('${e.id}')" title="Selesai"><i class="ti ti-check"></i></button>
-          <button class="btn btn-danger btn-sm" onclick="hapusEvent('${e.id}')" title="Hapus"><i class="ti ti-trash"></i></button>
+          <button class="btn btn-ghost btn-sm" onclick="openEditEvent('${e.id}')"><i class="ti ti-edit"></i></button>
+          <button class="btn btn-ghost btn-sm" onclick="openAddMilestone('${e.id}')"><i class="ti ti-plus"></i></button>
+          <button class="btn btn-amber btn-sm" onclick="openSelesaiEvent('${e.id}')"><i class="ti ti-check"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="hapusEvent('${e.id}')"><i class="ti ti-trash"></i></button>
         </div>
       </div>
-      ${ms.length > 0 ? `
-        <div class="milestone-list">
-          <div class="flex-between" style="margin-bottom:6px">
-            <span style="font-size:11px;color:var(--muted)">MILESTONE — ${msDone}/${ms.length}</span>
-            <span style="font-size:11px;color:var(--cyan)">${msPct}%</span>
-          </div>
-          <div class="progress-wrap" style="margin-bottom:8px"><div class="progress-bar" style="width:${msPct}%"></div></div>
-          ${ms.map((m,idx) => `
-            <div class="milestone-item ${m.selesai?'done':''}" onclick="toggleMilestone('${e.id}', ${idx})">
-              <input type="checkbox" ${m.selesai?'checked':''} onchange="toggleMilestone('${e.id}',${idx}); event.stopPropagation()">
-              <label>${m.nama}${m.deadline ? ` <span style="color:var(--muted);font-size:10px">(${m.deadline})</span>` : ''}</label>
-            </div>`).join('')}
-        </div>` : ''}
+      ${ms.length>0?`<div class="milestone-list">
+        <div class="flex-between" style="margin-bottom:5px"><span style="font-size:10px;color:var(--muted)">MILESTONE ${msDone}/${ms.length}</span><span style="font-size:11px;color:var(--cyan)">${msPct}%</span></div>
+        <div class="progress-wrap" style="margin-bottom:6px"><div class="progress-bar" style="width:${msPct}%"></div></div>
+        ${ms.map((m,idx)=>`<div class="milestone-item ${m.selesai?'done':''}" onclick="toggleMilestone('${e.id}',${idx})">
+          <input type="checkbox" ${m.selesai?'checked':''} onchange="toggleMilestone('${e.id}',${idx});event.stopPropagation()">
+          <label>${m.nama}${m.deadline?` <span style="font-size:10px;color:var(--muted)">(${m.deadline})</span>`:''}</label>
+        </div>`).join('')}
+      </div>`:''}
     </div>`;
   }).join('');
 }
 
 async function saveEvent() {
-  const btn = $('btn-save-event'); btn.disabled=true; btn.textContent='Menyimpan...';
-  const body = {
-    nama: $('e-nama').value.trim(),
-    kategori: $('e-kategori').value,
-    deadline: $('e-deadline').value.trim(),
-    peran: $('e-peran').value.trim(),
-    tim: $('e-tim').value.trim(),
-    deskripsi: $('e-deskripsi').value.trim(),
-    catatan: $('e-catatan').value.trim(),
-  };
-  const r = await fetch(`${API}/events`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)}).then(r=>r.json()).catch(()=>null);
-  btn.disabled=false; btn.innerHTML='<i class="ti ti-plus"></i> Tambah';
-  if (r?.ok) {
-    closeModal('modal-event');
-    ['e-nama','e-deadline','e-peran','e-tim','e-deskripsi','e-catatan'].forEach(id=>$(id).value='');
-    toast('Event ditambahkan! 🏆'); loadEvents();
-  } else toast(r?.msg||'Gagal','error');
+  const btn=$('btn-save-event');btn.disabled=true;btn.textContent='...';
+  const body={nama:$('e-nama').value.trim(),kategori:$('e-kategori').value,deadline:$('e-deadline').value.trim(),peran:$('e-peran').value.trim(),tim:$('e-tim').value.trim(),deskripsi:$('e-deskripsi').value.trim()};
+  const r=await fetch(`${API}/events`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(()=>null);
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-plus"></i> Tambah';
+  if(r?.ok){closeModal('modal-event');['e-nama','e-deadline','e-peran','e-tim','e-deskripsi'].forEach(id=>$(id).value='');toast('Event ditambahkan! 🏆');loadEvents();}
+  else toast(r?.msg||'Gagal','error');
 }
 
 function openEditEvent(eid) {
-  const e = allEvents.find(x=>x.id===eid);
-  if (!e) return;
-  $('ee-id').value = eid;
-  $('ee-nama').value = e.nama;
-  $('ee-kategori').value = e.kategori;
-  $('ee-deadline').value = e.deadline;
-  $('ee-peran').value = e.peran;
-  $('ee-tim').value = Array.isArray(e.tim) ? e.tim.join(', ') : e.tim;
-  $('ee-deskripsi').value = e.deskripsi;
-  $('ee-catatan').value = e.catatan;
+  const e=allEvents.find(x=>x.id===eid);if(!e)return;
+  $('ee-id').value=eid;$('ee-nama').value=e.nama;$('ee-kategori').value=e.kategori;
+  $('ee-deadline').value=e.deadline;$('ee-peran').value=e.peran;
+  $('ee-tim').value=Array.isArray(e.tim)?e.tim.join(', '):e.tim;$('ee-deskripsi').value=e.deskripsi;
   openModal('modal-event-edit');
 }
 
 async function updateEvent() {
-  const eid = $('ee-id').value;
-  const body = {
-    nama: $('ee-nama').value.trim(),
-    kategori: $('ee-kategori').value,
-    deadline: $('ee-deadline').value.trim(),
-    peran: $('ee-peran').value.trim(),
-    tim: $('ee-tim').value.trim().split(',').map(x=>x.trim()).filter(Boolean),
-    deskripsi: $('ee-deskripsi').value.trim(),
-    catatan: $('ee-catatan').value.trim(),
-  };
-  const r = await fetch(`${API}/events/${eid}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)}).then(r=>r.json()).catch(()=>null);
-  if (r?.ok) { closeModal('modal-event-edit'); toast('Event diupdate'); loadEvents(); }
-  else toast(r?.msg||'Gagal','error');
+  const eid=$('ee-id').value;
+  const body={nama:$('ee-nama').value.trim(),kategori:$('ee-kategori').value,deadline:$('ee-deadline').value.trim(),peran:$('ee-peran').value.trim(),tim:$('ee-tim').value.trim().split(',').map(x=>x.trim()).filter(Boolean),deskripsi:$('ee-deskripsi').value.trim()};
+  const r=await fetch(`${API}/events/${eid}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(()=>null);
+  if(r?.ok){closeModal('modal-event-edit');toast('Event diupdate');loadEvents();}else toast(r?.msg||'Gagal','error');
 }
 
-function openAddMilestone(eid) { $('ms-eid').value = eid; openModal('modal-milestone'); }
-
+function openAddMilestone(eid){$('ms-eid').value=eid;openModal('modal-milestone');}
 async function saveMilestone() {
-  const eid = $('ms-eid').value;
-  const body = { nama: $('ms-nama').value.trim(), deadline: $('ms-deadline').value.trim() };
-  if (!body.nama) return toast('Nama milestone wajib','error');
-  const r = await fetch(`${API}/events/${eid}/milestone`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)}).then(r=>r.json()).catch(()=>null);
-  if (r?.ok) { closeModal('modal-milestone'); $('ms-nama').value=''; $('ms-deadline').value=''; toast('Milestone ditambahkan'); loadEvents(); }
-  else toast(r?.msg||'Gagal','error');
+  const eid=$('ms-eid').value;
+  const body={nama:$('ms-nama').value.trim(),deadline:$('ms-deadline').value.trim()};
+  if(!body.nama)return toast('Nama wajib','error');
+  const r=await fetch(`${API}/events/${eid}/milestone`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(()=>null);
+  if(r?.ok){closeModal('modal-milestone');$('ms-nama').value='';$('ms-deadline').value='';toast('Milestone ditambahkan');loadEvents();}else toast(r?.msg||'Gagal','error');
 }
 
-async function toggleMilestone(eid, idx) {
-  const r = await fetch(`${API}/events/${eid}/milestone/${idx}/selesai`, {method:'POST'}).then(r=>r.json()).catch(()=>null);
-  if (r?.ok) loadEvents();
+async function toggleMilestone(eid,idx) {
+  const r=await fetch(`${API}/events/${eid}/milestone/${idx}/selesai`,{method:'POST'}).then(r=>r.json()).catch(()=>null);
+  if(r?.ok)loadEvents();
 }
 
-function openSelesaiEvent(eid) { $('es-id').value = eid; openModal('modal-event-selesai'); }
-
+function openSelesaiEvent(eid){$('es-id').value=eid;openModal('modal-event-selesai');}
 async function konfirmasiSelesaiEvent() {
-  const eid = $('es-id').value;
-  const hasil = $('es-hasil').value.trim();
-  const r = await fetch(`${API}/events/${eid}/selesai`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({hasil})}).then(r=>r.json()).catch(()=>null);
-  if (r?.ok) { closeModal('modal-event-selesai'); $('es-hasil').value=''; toast('Event selesai! 🎉'); loadEvents(); }
-  else toast(r?.msg||'Gagal','error');
+  const eid=$('es-id').value;
+  const r=await fetch(`${API}/events/${eid}/selesai`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({hasil:$('es-hasil').value.trim()})}).then(r=>r.json()).catch(()=>null);
+  if(r?.ok){closeModal('modal-event-selesai');$('es-hasil').value='';toast('Event selesai! 🎉');loadEvents();}else toast(r?.msg||'Gagal','error');
 }
 
 async function hapusEvent(eid) {
-  if (!confirm('Hapus event ini?')) return;
-  const r = await fetch(`${API}/events/${eid}`, {method:'DELETE'}).then(r=>r.json()).catch(()=>null);
-  if (r?.ok) { toast('Event dihapus'); loadEvents(); }
-  else toast(r?.msg||'Gagal','error');
+  if(!confirm('Hapus event ini?'))return;
+  const r=await fetch(`${API}/events/${eid}`,{method:'DELETE'}).then(r=>r.json()).catch(()=>null);
+  if(r?.ok){toast('Dihapus');loadEvents();}else toast(r?.msg||'Gagal','error');
 }
 
-// ─── GOALS ───────────────────────────────────────────────────────────────────
+// ─── GOALS ────────────────────────────────────────────────────────────────────
 function loadGoals() {
-  fetch(`${API}/goals`).then(r=>r.json()).then(data => {
-    allGoals = data;
-    renderGoals();
-  }).catch(() => toast('Gagal load goals','error'));
+  fetch(`${API}/goals`).then(r=>r.json()).then(data=>{allGoals=data;renderGoals();}).catch(()=>toast('Gagal load goals','error'));
 }
 
 function renderGoals() {
-  if (allGoals.length === 0) {
-    $('goals-list').innerHTML = `<div class="empty-state"><i class="ti ti-target"></i><p>Belum ada goal. Set tujuan besarmu!</p></div>`;
-    return;
-  }
-  $('goals-list').innerHTML = allGoals.map(g => {
-    const ms = g.milestones || [];
-    const msDone = ms.filter(m=>m.selesai).length;
-    const katMap = { kompetisi:'🏆', akademik:'📚', bisnis:'💼', riset:'📄', personal:'🌱' };
-    return `
-    <div class="goal-card">
+  if(allGoals.length===0){$('goals-list').innerHTML=`<div class="empty-state"><i class="ti ti-target"></i><p>Belum ada goal. Set tujuan besarmu!</p></div>`;return;}
+  const katMap={kompetisi:'🏆',akademik:'📚',bisnis:'💼',riset:'📄',personal:'🌱'};
+  $('goals-list').innerHTML=allGoals.map(g=>{
+    const ms=g.milestones||[];
+    const msDone=ms.filter(m=>m.selesai).length;
+    return `<div class="goal-card">
       <div class="goal-header">
-        <div>
-          <div style="font-size:14px;font-weight:600;margin-bottom:4px">${katMap[g.kategori]||'🎯'} ${g.nama}</div>
-          <div style="font-size:12px;color:var(--muted)">${g.deskripsi||''}${g.deadline?` · 📅 ${g.deadline}`:''}</div>
-        </div>
+        <div><div style="font-size:13px;font-weight:600;margin-bottom:3px">${katMap[g.kategori]||'🎯'} ${g.nama}</div>
+        <div style="font-size:11px;color:var(--muted)">${g.deskripsi||''}${g.deadline?` · 📅 ${g.deadline}`:''}</div></div>
         <div class="flex-row">
           <button class="btn btn-ghost btn-sm" onclick="selesaikanGoal('${g.id}')"><i class="ti ti-check"></i></button>
           <button class="btn btn-danger btn-sm" onclick="hapusGoal('${g.id}')"><i class="ti ti-trash"></i></button>
@@ -1383,345 +1341,240 @@ function renderGoals() {
         <div class="progress-wrap" style="flex:1"><div class="progress-bar ${g.progress>=100?'green':''}" style="width:${g.progress}%"></div></div>
         <span class="goal-pct">${g.progress}%</span>
       </div>
-      ${ms.length > 0 ? `
-        <div class="milestone-list" style="margin-top:8px">
-          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">MILESTONE — ${msDone}/${ms.length}</div>
-          ${ms.map((m,idx) => `
-            <div class="milestone-item ${m.selesai?'done':''}" onclick="toggleGoalMilestone('${g.id}',${idx})">
-              <input type="checkbox" ${m.selesai?'checked':''} onchange="toggleGoalMilestone('${g.id}',${idx});event.stopPropagation()">
-              <label>${m.nama}</label>
-            </div>`).join('')}
-        </div>` : ''}
+      ${ms.length>0?`<div class="milestone-list"><div style="font-size:10px;color:var(--muted);margin-bottom:5px">MILESTONE — ${msDone}/${ms.length}</div>
+        ${ms.map((m,idx)=>`<div class="milestone-item ${m.selesai?'done':''}" onclick="toggleGoalMilestone('${g.id}',${idx})">
+          <input type="checkbox" ${m.selesai?'checked':''} onchange="toggleGoalMilestone('${g.id}',${idx});event.stopPropagation()">
+          <label>${m.nama}</label>
+        </div>`).join('')}</div>`:''}
     </div>`;
   }).join('');
 }
 
 async function saveGoal() {
-  const body = {
-    nama: $('g-nama').value.trim(),
-    kategori: $('g-kategori').value,
-    deadline: $('g-deadline').value.trim(),
-    deskripsi: $('g-deskripsi').value.trim(),
-  };
-  if (!body.nama) return toast('Nama goal wajib','error');
-  const r = await fetch(`${API}/goals`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)}).then(r=>r.json()).catch(()=>null);
-  if (r?.ok) {
-    closeModal('modal-goal');
-    ['g-nama','g-deadline','g-deskripsi'].forEach(id=>$(id).value='');
-    toast('Goal ditambahkan! 🎯'); loadGoals();
-  } else toast(r?.msg||'Gagal','error');
+  const body={nama:$('g-nama').value.trim(),kategori:$('g-kategori').value,deadline:$('g-deadline').value.trim(),deskripsi:$('g-deskripsi').value.trim()};
+  if(!body.nama)return toast('Nama wajib','error');
+  const r=await fetch(`${API}/goals`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(()=>null);
+  if(r?.ok){closeModal('modal-goal');['g-nama','g-deadline','g-deskripsi'].forEach(id=>$(id).value='');toast('Goal ditambahkan! 🎯');loadGoals();}else toast(r?.msg||'Gagal','error');
 }
 
-async function toggleGoalMilestone(gid, idx) {
-  const r = await fetch(`${API}/goals/${gid}/milestone/${idx}/selesai`, {method:'POST'}).then(r=>r.json()).catch(()=>null);
-  if (r?.ok) loadGoals();
+async function toggleGoalMilestone(gid,idx) {
+  const r=await fetch(`${API}/goals/${gid}/milestone/${idx}/selesai`,{method:'POST'}).then(r=>r.json()).catch(()=>null);
+  if(r?.ok)loadGoals();
 }
 
 async function selesaikanGoal(gid) {
-  if (!confirm('Tandai goal ini sebagai selesai?')) return;
-  const r = await fetch(`${API}/goals/${gid}/selesai`, {method:'POST'}).then(r=>r.json()).catch(()=>null);
-  if (r?.ok) { toast('Goal selesai! 🎊'); loadGoals(); }
-  else toast(r?.msg||'Gagal','error');
+  if(!confirm('Tandai goal selesai?'))return;
+  const r=await fetch(`${API}/goals/${gid}/selesai`,{method:'POST'}).then(r=>r.json()).catch(()=>null);
+  if(r?.ok){toast('Goal selesai! 🎊');loadGoals();}else toast(r?.msg||'Gagal','error');
 }
 
 async function hapusGoal(gid) {
-  if (!confirm('Hapus goal ini?')) return;
-  const r = await fetch(`${API}/goals/${gid}`, {method:'DELETE'}).then(r=>r.json()).catch(()=>null);
-  if (r?.ok) { toast('Goal dihapus'); loadGoals(); }
-  else toast(r?.msg||'Gagal','error');
+  if(!confirm('Hapus goal?'))return;
+  const r=await fetch(`${API}/goals/${gid}`,{method:'DELETE'}).then(r=>r.json()).catch(()=>null);
+  if(r?.ok){toast('Dihapus');loadGoals();}else toast(r?.msg||'Gagal','error');
 }
 
-// ─── JADWAL ──────────────────────────────────────────────────────────────────
+// ─── JADWAL ───────────────────────────────────────────────────────────────────
 function initJadwal() {
-  const hari = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
-  const today = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][new Date().getDay()];
-  const tabs = document.querySelectorAll('#page-jadwal .tab-btn');
-  let targetTab = tabs[0];
-  tabs.forEach((t,i) => {
-    t.classList.remove('active');
-    if (hari[i] === today) targetTab = t;
-  });
+  const hari=['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
+  const today=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][new Date().getDay()];
+  const tabs=document.querySelectorAll('#page-jadwal .tab-btn');
+  let targetTab=tabs[0];
+  tabs.forEach((t,i)=>{t.classList.remove('active');if(hari[i]===today)targetTab=t;});
   targetTab.classList.add('active');
-  showJadwal(today, targetTab);
+  showJadwal(today,targetTab);
 }
 
-function showJadwal(hari, btn) {
+function showJadwal(hari,btn) {
   document.querySelectorAll('#page-jadwal .tab-btn').forEach(b=>b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  fetch(`${API}/jadwal?hari=${hari}`).then(r=>r.json()).then(data => {
-    const tbody = $('jadwal-tbody');
-    if (data.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="3" class="jadwal-empty">Tidak ada kuliah ${hari} 🎉</td></tr>`;
-    } else {
-      tbody.innerHTML = data.map(j => `<tr>
-        <td><span style="font-family:var(--font-mono);font-size:12px;color:var(--cyan)">${j.jam}</span></td>
-        <td>${j.mata_kuliah}</td>
-        <td><span style="color:var(--muted)">${j.ruang}</span></td>
-      </tr>`).join('');
-    }
+  if(btn)btn.classList.add('active');
+  fetch(`${API}/jadwal?hari=${hari}`).then(r=>r.json()).then(data=>{
+    const tbody=$('jadwal-tbody');
+    if(data.length===0){tbody.innerHTML=`<tr><td colspan="3" class="jadwal-empty">Tidak ada kuliah ${hari} 🎉</td></tr>`;}
+    else tbody.innerHTML=data.map(j=>`<tr><td><span style="font-family:var(--font-mono);font-size:11px;color:var(--cyan)">${j.jam}</span></td><td>${j.mata_kuliah}</td><td><span style="color:var(--muted)">${j.ruang}</span></td></tr>`).join('');
   });
 }
 
-// ─── CHAT AI ─────────────────────────────────────────────────────────────────
-const MODE_LABELS = {
-  general:'💬 Umum', lomba_ai:'🤖 Lomba AI',
-  bisnis:'💼 Bisnis', riset:'📄 Riset',
-  ctf:'🔐 CTF', planner:'📋 Planner'
-};
+// ─── CHAT AI ──────────────────────────────────────────────────────────────────
+const MODE_LABELS={general:'💬 Umum',lomba_ai:'🤖 Lomba AI',bisnis:'💼 Bisnis',riset:'📄 Riset',ctf:'🔐 CTF',planner:'📋 Planner'};
 
-function setMode(mode, btn) {
-  const prev = chatMode;
-  chatMode = mode;
+function setMode(mode,btn) {
+  const prev=chatMode; chatMode=mode;
   document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  else document.querySelectorAll('.mode-btn').forEach(b => { if (b.dataset.mode===mode) b.classList.add('active'); });
-  $('mode-label').textContent = MODE_LABELS[mode] || mode;
-  if (prev !== mode) {
-    clearChat();
-    appendMsg('system-notice', `Mode berganti ke ${MODE_LABELS[mode]||mode}. Chat di-reset.`);
-  }
+  if(btn)btn.classList.add('active');
+  else document.querySelectorAll('.mode-btn').forEach(b=>{if(b.dataset.mode===mode)b.classList.add('active');});
+  $('chat-mode-sub').textContent=`Mode: ${MODE_LABELS[mode]||mode}`;
+  if(prev!==mode){clearChat();appendMsg('system-notice',`Mode: ${MODE_LABELS[mode]}`);}
 }
 
 function clearChat() {
-  chatHistory = [];
-  lastAiMsg = '';
-  $('chat-box').innerHTML = `<div class="empty-state"><i class="ti ti-robot"></i><p>Mode: ${MODE_LABELS[chatMode]}. Mulai percakapan.</p></div>`;
+  chatHistory=[];lastAiMsg='';
+  $('chat-box').innerHTML=`<div class="empty-state"><i class="ti ti-robot"></i><p>Mode: ${MODE_LABELS[chatMode]}. Mulai percakapan.</p></div>`;
 }
 
-function appendMsg(role, content) {
-  const box = $('chat-box');
-  // Remove empty state
-  const empty = box.querySelector('.empty-state');
-  if (empty) empty.remove();
-
-  const div = document.createElement('div');
-  if (role === 'user') {
-    div.className = 'msg user';
-    div.innerHTML = `<div class="msg-bubble">${escHtml(content)}</div>`;
-  } else if (role === 'ai') {
-    div.className = 'msg ai';
-    div.innerHTML = `<div class="msg-bubble md-content">${md2html(content)}</div>`;
-    lastAiMsg = content;
-  } else {
-    div.style.cssText = 'text-align:center;font-size:11px;color:var(--muted);padding:4px 0';
-    div.textContent = content;
-  }
-  box.appendChild(div);
-  box.scrollTop = box.scrollHeight;
+function appendMsg(role,content) {
+  const box=$('chat-box');
+  const empty=box.querySelector('.empty-state');if(empty)empty.remove();
+  const div=document.createElement('div');
+  if(role==='user'){div.className='msg user';div.innerHTML=`<div class="msg-bubble">${escHtml(content)}</div>`;}
+  else if(role==='ai'){div.className='msg ai';div.innerHTML=`<div class="msg-bubble md-content">${md2html(content)}</div>`;lastAiMsg=content;}
+  else{div.style.cssText='text-align:center;font-size:11px;color:var(--muted);padding:4px 0';div.textContent=content;}
+  box.appendChild(div);box.scrollTop=box.scrollHeight;
 }
-
-function escHtml(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 async function sendChat() {
-  const inp = $('chat-input');
-  const msg = inp.value.trim();
-  if (!msg) return;
-  inp.value = '';
-  appendMsg('user', msg);
-
-  // Typing indicator
-  const box = $('chat-box');
-  const typing = document.createElement('div');
-  typing.className = 'msg ai';
-  typing.id = 'typing';
-  typing.innerHTML = `<div class="msg-bubble"><div class="typing-dot"><span></span><span></span><span></span></div></div>`;
-  box.appendChild(typing);
-  box.scrollTop = box.scrollHeight;
-
-  const btn = $('chat-send-btn');
-  btn.disabled = true;
-
-  const body = { pesan: msg, history: chatHistory, mode: chatMode };
-  const r = await fetch(`${API}/chat`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)}).then(r=>r.json()).catch(()=>null);
-
-  typing.remove();
-  btn.disabled = false;
-
-  if (r?.ok) {
-    chatHistory.push({role:'user', content: msg});
-    chatHistory.push({role:'assistant', content: r.reply});
-    appendMsg('ai', r.reply);
-  } else {
-    appendMsg('system-notice', '⚠️ ' + (r?.msg || 'Gagal menghubungi AI. Pastikan Ollama aktif.'));
-  }
+  const inp=$('chat-input');const msg=inp.value.trim();if(!msg)return;
+  inp.value='';appendMsg('user',msg);
+  const box=$('chat-box');
+  const typing=document.createElement('div');typing.className='msg ai';typing.id='typing';
+  typing.innerHTML=`<div class="msg-bubble"><div class="typing-dot"><span></span><span></span><span></span></div></div>`;
+  box.appendChild(typing);box.scrollTop=box.scrollHeight;
+  const btn=$('chat-send-btn');btn.disabled=true;
+  const r=await fetch(`${API}/chat`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pesan:msg,history:chatHistory,mode:chatMode})}).then(r=>r.json()).catch(()=>null);
+  typing.remove();btn.disabled=false;
+  if(r?.ok){chatHistory.push({role:'user',content:msg});chatHistory.push({role:'assistant',content:r.reply});appendMsg('ai',r.reply);}
+  else appendMsg('system-notice','⚠️ '+(r?.msg||'Gagal. Pastikan Ollama aktif.'));
 }
 
 async function saveLastToVault() {
-  if (!lastAiMsg) return toast('Tidak ada pesan AI untuk disimpan','error');
-  $('i-judul').value = `Chat ${MODE_LABELS[chatMode]} — ${new Date().toLocaleDateString('id')}`;
-  $('i-konten').value = lastAiMsg;
-  $('i-kategori').value = chatMode === 'bisnis' ? 'bisnis' : chatMode === 'riset' ? 'riset' : chatMode === 'lomba_ai' ? 'lomba' : 'umum';
+  if(!lastAiMsg)return toast('Tidak ada pesan AI','error');
+  $('i-judul').value=`Chat ${MODE_LABELS[chatMode]} — ${new Date().toLocaleDateString('id')}`;
+  $('i-konten').value=lastAiMsg;
+  $('i-kategori').value=chatMode==='bisnis'?'bisnis':chatMode==='riset'?'riset':chatMode==='lomba_ai'?'lomba':'umum';
   openModal('modal-idea');
 }
 
 // ─── IDEA VAULT ───────────────────────────────────────────────────────────────
 function loadIdeas() {
-  const search = $('idea-search')?.value || '';
-  let url = `${API}/ideas?search=${encodeURIComponent(search)}`;
-  fetch(url).then(r=>r.json()).then(data => {
-    let filtered = data;
-    if (ideasFilter === 'favorit') filtered = data.filter(i=>i.favorit);
-    else if (ideasFilter !== 'semua') filtered = data.filter(i=>i.kategori === ideasFilter);
+  const search=$('idea-search')?.value||'';
+  fetch(`${API}/ideas?search=${encodeURIComponent(search)}`).then(r=>r.json()).then(data=>{
+    let filtered=data;
+    if(ideasFilter==='favorit')filtered=data.filter(i=>i.favorit);
+    else if(ideasFilter!=='semua')filtered=data.filter(i=>i.kategori===ideasFilter);
     renderIdeas(filtered);
-  }).catch(() => toast('Gagal load ideas','error'));
+  }).catch(()=>toast('Gagal load ideas','error'));
 }
 
-function filterIdeas(f, btn) {
-  ideasFilter = f;
+function filterIdeas(f,btn) {
+  ideasFilter=f;
   document.querySelectorAll('#page-ideas .tab-btn').forEach(b=>b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
+  if(btn)btn.classList.add('active');
   loadIdeas();
 }
 
 function renderIdeas(data) {
-  if (data.length === 0) {
-    $('ideas-grid').innerHTML = `<div class="empty-state" style="grid-column:1/-1"><i class="ti ti-bulb"></i><p>Belum ada ide tersimpan. Brainstorm dulu!</p></div>`;
-    return;
-  }
-  $('ideas-grid').innerHTML = data.map(i => `
+  if(data.length===0){$('ideas-grid').innerHTML=`<div class="empty-state"><i class="ti ti-bulb"></i><p>Belum ada ide tersimpan</p></div>`;return;}
+  $('ideas-grid').innerHTML=data.map(i=>`
     <div class="idea-card" onclick="viewIdea('${i.id}')">
-      <div class="flex-between" style="margin-bottom:6px">
+      <div class="flex-between" style="margin-bottom:5px">
         <div class="idea-title">${i.judul}</div>
-        ${i.favorit ? '<span style="color:var(--amber)">⭐</span>' : ''}
+        ${i.favorit?'<span style="color:var(--amber)">⭐</span>':''}
       </div>
-      <div class="idea-preview">${i.konten || '(tanpa konten)'}</div>
+      <div class="idea-preview">${i.konten||'(tanpa konten)'}</div>
       <div class="idea-footer">
         ${(i.tags||[]).map(t=>`<span class="idea-tag">#${t}</span>`).join('')}
-        <span style="margin-left:auto;font-size:10px;color:var(--muted)">${i.dibuat?.split(' ')[0]||''}</span>
+        <span style="margin-left:auto;font-size:10px;color:var(--muted)">${(i.dibuat||'').split(' ')[0]}</span>
       </div>
     </div>`).join('');
 }
 
 function viewIdea(id) {
-  fetch(`${API}/ideas`).then(r=>r.json()).then(data => {
-    const idea = data.find(i=>i.id===id);
-    if (!idea) return;
-    currentIdeaId = id;
-    $('iv-judul').textContent = idea.judul;
-    $('iv-konten').textContent = idea.konten || '';
-    $('iv-meta').innerHTML = `Kategori: ${idea.kategori} · Tags: ${(idea.tags||[]).join(', ')||'–'} · ${idea.dibuat||''}`;
-    $('iv-fav-btn').innerHTML = `<i class="ti ti-star${idea.favorit?'-filled':''}"></i> ${idea.favorit?'Unfavorit':'Favorit'}`;
+  fetch(`${API}/ideas`).then(r=>r.json()).then(data=>{
+    const idea=data.find(i=>i.id===id);if(!idea)return;
+    currentIdeaId=id;
+    $('iv-judul').textContent=idea.judul;
+    $('iv-konten').textContent=idea.konten||'';
+    $('iv-meta').innerHTML=`Kategori: ${idea.kategori} · Tags: ${(idea.tags||[]).join(', ')||'–'} · ${idea.dibuat||''}`;
+    $('iv-fav-btn').innerHTML=`<i class="ti ti-star${idea.favorit?'-filled':''}"></i> ${idea.favorit?'Unfavorit':'Favorit'}`;
     openModal('modal-idea-view');
   });
 }
 
 async function toggleFavFromView() {
-  if (!currentIdeaId) return;
-  const r = await fetch(`${API}/ideas/${currentIdeaId}/favorit`, {method:'POST'}).then(r=>r.json()).catch(()=>null);
-  if (r?.ok) { closeModal('modal-idea-view'); loadIdeas(); toast(r.favorit?'Ditandai favorit ⭐':'Favorit dihapus'); }
+  if(!currentIdeaId)return;
+  const r=await fetch(`${API}/ideas/${currentIdeaId}/favorit`,{method:'POST'}).then(r=>r.json()).catch(()=>null);
+  if(r?.ok){closeModal('modal-idea-view');loadIdeas();toast(r.favorit?'Favorit ⭐':'Dihapus dari favorit');}
 }
 
 async function deleteIdeaFromView() {
-  if (!currentIdeaId || !confirm('Hapus ide ini?')) return;
-  const r = await fetch(`${API}/ideas/${currentIdeaId}`, {method:'DELETE'}).then(r=>r.json()).catch(()=>null);
-  if (r?.ok) { closeModal('modal-idea-view'); loadIdeas(); toast('Ide dihapus'); }
+  if(!currentIdeaId||!confirm('Hapus ide?'))return;
+  const r=await fetch(`${API}/ideas/${currentIdeaId}`,{method:'DELETE'}).then(r=>r.json()).catch(()=>null);
+  if(r?.ok){closeModal('modal-idea-view');loadIdeas();toast('Dihapus');}
 }
 
 async function saveIdea() {
-  const body = {
-    judul: $('i-judul').value.trim(),
-    kategori: $('i-kategori').value,
-    konten: $('i-konten').value.trim(),
-    tags: $('i-tags').value.trim(),
-  };
-  if (!body.judul) return toast('Judul wajib diisi','error');
-  const r = await fetch(`${API}/ideas`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)}).then(r=>r.json()).catch(()=>null);
-  if (r?.ok) {
-    closeModal('modal-idea');
-    ['i-judul','i-konten','i-tags'].forEach(id=>$(id).value='');
-    toast('Ide disimpan ke Vault! 💡'); loadIdeas();
-  } else toast(r?.msg||'Gagal','error');
+  const body={judul:$('i-judul').value.trim(),kategori:$('i-kategori').value,konten:$('i-konten').value.trim(),tags:$('i-tags').value.trim()};
+  if(!body.judul)return toast('Judul wajib','error');
+  const r=await fetch(`${API}/ideas`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(()=>null);
+  if(r?.ok){closeModal('modal-idea');['i-judul','i-konten','i-tags'].forEach(id=>$(id).value='');toast('Ide disimpan! 💡');loadIdeas();}else toast(r?.msg||'Gagal','error');
 }
 
 // ─── QUICK NOTES ──────────────────────────────────────────────────────────────
 function loadNotes() {
-  fetch(`${API}/notes`).then(r=>r.json()).then(data => {
-    if (data.length === 0) {
-      $('notes-list').innerHTML = `<div class="empty-state"><i class="ti ti-notes"></i><p>Belum ada catatan.</p></div>`;
-      return;
-    }
-    $('notes-list').innerHTML = data.map(n => `
-      <div class="note-item" id="note-${n.id}">
+  fetch(`${API}/notes`).then(r=>r.json()).then(data=>{
+    if(data.length===0){$('notes-list').innerHTML=`<div class="empty-state"><i class="ti ti-notes"></i><p>Belum ada catatan.</p></div>`;return;}
+    $('notes-list').innerHTML=data.map(n=>`
+      <div class="note-item">
         <div class="note-konten">${escHtml(n.konten)}<div class="note-time">${n.dibuat}</div></div>
         <div class="flex-row" style="flex-shrink:0;gap:4px">
-          <button class="btn btn-ghost btn-sm" onclick="doneNote('${n.id}')" title="Selesai"><i class="ti ti-check"></i></button>
-          <button class="btn btn-danger btn-sm" onclick="deleteNote('${n.id}')" title="Hapus"><i class="ti ti-trash"></i></button>
+          <button class="btn btn-ghost btn-sm" onclick="doneNote('${n.id}')"><i class="ti ti-check"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="deleteNote('${n.id}')"><i class="ti ti-trash"></i></button>
         </div>
       </div>`).join('');
-  }).catch(() => toast('Gagal load notes','error'));
+  }).catch(()=>toast('Gagal load notes','error'));
 }
 
 async function saveNote() {
-  const konten = $('note-input').value.trim();
-  if (!konten) return;
-  const r = await fetch(`${API}/notes`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({konten})}).then(r=>r.json()).catch(()=>null);
-  if (r?.ok) { $('note-input').value=''; toast('Note disimpan 📝'); loadNotes(); }
-  else toast(r?.msg||'Gagal','error');
+  const konten=$('note-input').value.trim();if(!konten)return;
+  const r=await fetch(`${API}/notes`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({konten})}).then(r=>r.json()).catch(()=>null);
+  if(r?.ok){$('note-input').value='';toast('Note disimpan 📝');loadNotes();}else toast(r?.msg||'Gagal','error');
 }
 
 async function doneNote(id) {
-  const r = await fetch(`${API}/notes/${id}/done`, {method:'POST'}).then(r=>r.json()).catch(()=>null);
-  if (r?.ok) { toast('Note selesai ✓'); loadNotes(); }
+  const r=await fetch(`${API}/notes/${id}/done`,{method:'POST'}).then(r=>r.json()).catch(()=>null);
+  if(r?.ok){toast('Done ✓');loadNotes();}
 }
 
 async function deleteNote(id) {
-  const r = await fetch(`${API}/notes/${id}`, {method:'DELETE'}).then(r=>r.json()).catch(()=>null);
-  if (r?.ok) { toast('Note dihapus'); loadNotes(); }
+  const r=await fetch(`${API}/notes/${id}`,{method:'DELETE'}).then(r=>r.json()).catch(()=>null);
+  if(r?.ok){toast('Dihapus');loadNotes();}
 }
 
 // ─── FLASHCARD ────────────────────────────────────────────────────────────────
 async function generateFlashcard() {
-  const teks = $('fc-input').value.trim();
-  if (!teks) return toast('Paste teks terlebih dahulu','error');
-  const btn = $('fc-btn'); btn.disabled=true; btn.innerHTML='<i class="ti ti-loader ti-spin"></i> Generating...';
-  $('fc-result').innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted)"><div class="typing-dot" style="display:inline-flex"><span></span><span></span><span></span></div><div style="margin-top:8px">Generating flashcard...</div></div>`;
-
-  const r = await fetch(`${API}/flashcard`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({teks})}).then(r=>r.json()).catch(()=>null);
-  btn.disabled=false; btn.innerHTML='<i class="ti ti-sparkles"></i> Generate Flashcard';
-
-  if (r?.ok) {
-    const cards = parseFlashcards(r.flashcards);
-    if (cards.length === 0) {
-      $('fc-result').innerHTML = `<pre>${escHtml(r.flashcards)}</pre>`;
-    } else {
-      $('fc-result').innerHTML = cards.map(c => `
-        <div class="fc-card">
-          <div class="fc-q">Q: ${escHtml(c.q)}</div>
-          <div class="fc-a">A: ${escHtml(c.a)}</div>
-        </div>`).join('');
-    }
-  } else {
-    $('fc-result').innerHTML = `<div style="color:var(--red)">${r?.msg||'Gagal'}</div>`;
-    toast('Gagal generate flashcard','error');
-  }
+  const teks=$('fc-input').value.trim();if(!teks)return toast('Paste teks dulu','error');
+  const btn=$('fc-btn');btn.disabled=true;btn.innerHTML='<i class="ti ti-loader"></i> Generating...';
+  $('fc-result').innerHTML=`<div style="text-align:center;padding:20px;color:var(--muted)"><div class="typing-dot" style="display:inline-flex"><span></span><span></span><span></span></div><div style="margin-top:8px">Generating...</div></div>`;
+  const r=await fetch(`${API}/flashcard`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({teks})}).then(r=>r.json()).catch(()=>null);
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-sparkles"></i> Generate';
+  if(r?.ok){
+    const cards=parseFlashcards(r.flashcards);
+    $('fc-result').innerHTML=cards.length===0?`<pre>${escHtml(r.flashcards)}</pre>`:cards.map(c=>`<div class="fc-card"><div class="fc-q">Q: ${escHtml(c.q)}</div><div class="fc-a">A: ${escHtml(c.a)}</div></div>`).join('');
+  } else {$('fc-result').innerHTML=`<div style="color:var(--red)">${r?.msg||'Gagal'}</div>`;toast('Gagal','error');}
 }
 
 function parseFlashcards(text) {
-  const cards = [];
-  const lines = text.split('\n');
-  let cur = null;
-  for (const line of lines) {
-    if (line.startsWith('Q:')) { if (cur) cards.push(cur); cur = {q: line.slice(2).trim(), a:''}; }
-    else if (line.startsWith('A:') && cur) { cur.a = line.slice(2).trim(); }
+  const cards=[];const lines=text.split('\n');let cur=null;
+  for(const line of lines){
+    if(line.startsWith('Q:')){if(cur)cards.push(cur);cur={q:line.slice(2).trim(),a:''};}
+    else if(line.startsWith('A:')&&cur){cur.a=line.slice(2).trim();}
   }
-  if (cur) cards.push(cur);
-  return cards;
+  if(cur)cards.push(cur);return cards;
 }
 
 // ─── LAUNCHER ─────────────────────────────────────────────────────────────────
 async function bukaApp(nama) {
-  const r = await fetch(`${API}/buka/${nama}`, {method:'POST'}).then(r=>r.json()).catch(()=>null);
-  toast(r?.ok ? `${nama} dibuka!` : (r?.msg||'Gagal'), r?.ok?'success':'error');
+  const r=await fetch(`${API}/buka/${nama}`,{method:'POST'}).then(r=>r.json()).catch(()=>null);
+  toast(r?.ok?`${nama} dibuka!`:(r?.msg||'Gagal'),r?.ok?'success':'error');
 }
 
-// ─── INIT ──────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+// ─── INIT ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
   loadDashboard();
-  // Close modals on overlay click
-  document.querySelectorAll('.modal-overlay').forEach(m => {
-    m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
-  });
+  document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
 });
 </script>
 </body>
 </html>
+HTMLEOF
+echo "done - $(wc -l < /home/claude/index_responsive.html) lines"
